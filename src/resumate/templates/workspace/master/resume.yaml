@@ -1,0 +1,83 @@
+# resumate:example
+# ^ This file is SAMPLE CONTENT. Give your agent your current resume (PDF, Word, Markdown,
+#   or text) and it will rewrite it here, then delete the marker line above.
+#
+# MASTER RESUME
+#
+# Everything you've done worth mentioning lives here, even if it won't fit on one page.
+# Each application starts from a copy of this file; you (or your agent) comment out
+# lines with `#` or delete them to tailor it. `resumate build master` compiles this file.
+#
+# Format notes:
+#   - Inline Markdown works in any text: **bold**, *italic*, [link text](https://...)
+#   - Each section has one of: entries, skills, bullets, or text
+#   - Entries take: title, org, location, start, end (or `dates`), summary, bullets
+#   - Put numbers in bullets whenever you can; agents can't invent metrics for you.
+#   - It's fine to keep a few more bullets than you'd ever use: a richer master
+#     gives agents more to choose from when tailoring.
+
+name: Jordan Rivera
+headline: Senior Software Engineer · Distributed Systems & Developer Platforms
+contact:
+  email: jordan.rivera@example.com
+  phone: (555) 123-4567
+  location: Ann Arbor, MI
+  links:
+    - label: linkedin.com/in/jordanrivera
+      url: https://linkedin.com/in/jordanrivera
+    - label: github.com/jrivera
+      url: https://github.com/jrivera
+
+summary: >
+  Backend engineer with 8 years building reliable, high-throughput services and the
+  internal platforms other engineers depend on. Happiest turning ambiguous operational
+  pain into simple, well-instrumented systems.
+
+sections:
+  - title: Experience
+    entries:
+      - title: Senior Software Engineer
+        org: Lakeshore Logistics
+        location: Remote
+        start: Mar 2022
+        end: Present
+        bullets:
+          - Led redesign of the shipment-tracking pipeline from batch to streaming (Kafka, Flink), cutting event latency from **15 min to 4 s** for 2M daily shipments
+          - Built a self-service deployment platform adopted by **40+ teams**, reducing median deploy time from 45 to 8 minutes
+          - Mentored 5 engineers; two promoted to senior within 18 months
+          - Drove an on-call overhaul (runbooks, SLOs, alert pruning) that cut pages per week by 60%
+          # - Organized the quarterly internal hackathon (3 events, ~120 participants)
+
+      - title: Software Engineer
+        org: Brightline Health
+        location: Detroit, MI
+        start: Jun 2018
+        end: Feb 2022
+        bullets:
+          - Designed HIPAA-compliant patient messaging service handling 500K messages/day at 99.99% availability
+          - Migrated 30 services from a monolith to containers on Kubernetes with zero patient-facing downtime
+          - Introduced contract testing between 12 services, catching 90% of integration bugs before staging
+          # - Rewrote the internal admin dashboard in React
+
+  - title: Projects
+    entries:
+      - title: tracecat — open-source log sampling library
+        dates: 2023
+        bullets:
+          - Python library for adaptive log sampling; 1.2K GitHub stars, used in production by 3 companies
+
+  - title: Education
+    entries:
+      - title: B.S.E. Computer Science
+        org: University of Michigan
+        location: Ann Arbor, MI
+        dates: 2018
+
+  - title: Skills
+    skills:
+      - category: Languages
+        items: Python, Go, Java, SQL, TypeScript
+      - category: Infrastructure
+        items: Kubernetes, Kafka, Flink, PostgreSQL, Terraform, AWS
+      - category: Practices
+        items: Distributed systems, SRE / observability, API design, technical mentorship

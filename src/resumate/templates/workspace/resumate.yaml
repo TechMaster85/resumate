@@ -1,0 +1,10 @@
+# Resumate workspace settings. This file marks the root of your career workspace.
+style:
+  layout: classic        # classic: centered serif header, underlined headings, dates beside titles
+                         # modern: left-aligned sans header, accent color, ruled headings
+  # font: Times-Roman    # override the layout's font: Helvetica | Times-Roman | Courier
+  accent: "#1F3A5F"      # modern layout: color for your name, headings, and links
+  page_size: letter      # letter | a4
+  base_size: 10          # body font size in points
+  margin_in: 0.6         # page margins in inches
+  max_pages: 1           # `resumate check` errors if the resume runs longer

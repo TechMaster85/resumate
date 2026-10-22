@@ -1,0 +1,43 @@
+[project]
+name = "resumate"
+version = "0.1.0"
+description = "Plain-text career materials, tailored by AI agents, compiled into clean ATS-friendly PDFs."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "TechMaster85" }]
+keywords = ["resume", "cover-letter", "ats", "pdf", "job-search", "agents"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.6",
+    "pypdf>=4.0",
+    "pyyaml>=6.0",
+    "reportlab>=4.0",
+]
+
+[project.scripts]
+resumate = "resumate.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/resumate"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
