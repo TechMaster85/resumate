@@ -26,13 +26,15 @@ of their extracted text). Don't tailor applications from the sample content.
 
 ## Skills
 
-Load the matching skill in `.claude/skills/` before acting:
+Load the matching skill before acting. They're [Agent Skills](https://agentskills.io) in
+`.agents/skills/` (mirrored in `.claude/skills/` for Claude Code):
 
 - **resumate** — file formats and CLI reference. Read before editing any resumate file.
 - **resumate-apply** — tailor a resume and cover letter for a specific job.
 - **resumate-capture** — add accomplishments and stories to the master materials.
 
-Agents that don't support skills should read those `SKILL.md` files directly.
+If your agent doesn't load skills automatically, read `.agents/skills/<name>/SKILL.md`
+directly and follow it.
 
 ## Ground rules
 

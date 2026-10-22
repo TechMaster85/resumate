@@ -132,7 +132,10 @@ def test_cover_letter_pdf(workspace: Path, tmp_path: Path):
 
 def test_init_installs_skills_and_examples(workspace: Path):
     assert (workspace / "resumate.yaml").exists()
-    assert (workspace / ".claude/skills/resumate-apply/SKILL.md").exists()
+    for skill_dir in (".agents/skills", ".claude/skills"):
+        assert (workspace / skill_dir / "resumate-apply/SKILL.md").exists()
+    for pointer in ("CLAUDE.md", "GEMINI.md"):
+        assert (workspace / pointer).read_text().strip() == "@AGENTS.md"
     assert "Ada Lovelace" in (workspace / "master/resume.yaml").read_text()
     with pytest.raises(ResumateError, match="already"):
         init_workspace(workspace)

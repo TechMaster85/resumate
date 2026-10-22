@@ -134,7 +134,7 @@ flag things the user must confirm as `# TODO(review): ...` (YAML) or
 | `resumate text FILE.pdf` | Print the text an ATS would extract |
 | `resumate status APP STATUS` | drafting, ready, applied, interviewing, offer, rejected, withdrawn |
 | `resumate attach APP FILE...` | Copy files from `supporting/` into the application's `out/` |
-| `resumate install-skills` | Refresh these skills from the installed package |
+| `resumate install-skills [--dest DIR]` | Refresh these skills in `.agents/skills/` and `.claude/skills/` from the installed package |
 
 `APP` accepts a path, the folder name, or any unique substring of it (e.g. `acme`).
 

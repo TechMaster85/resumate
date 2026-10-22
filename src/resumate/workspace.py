@@ -2,8 +2,9 @@
 
 my-career/
   resumate.yaml          workspace settings (style, page limits)
-  AGENTS.md, CLAUDE.md   orientation for AI agents
-  .claude/skills/        skills that teach agents to operate resumate
+  AGENTS.md              orientation for AI agents (CLAUDE.md, GEMINI.md import it)
+  .agents/skills/        Agent Skills that teach agents to operate resumate
+  .claude/skills/        the same skills, where Claude Code looks for them
   master/resume.yaml     everything you've done; tailored copies comment things out
   stories/*.md           work anecdotes for cover letters and interviews
   supporting/            portfolio pieces, writing samples, transcripts, ...
@@ -31,6 +32,9 @@ from resumate.loader import ResumateError, read_meta
 
 MARKER = "resumate.yaml"
 STATUSES = ("drafting", "ready", "applied", "interviewing", "offer", "rejected", "withdrawn")
+# Where agents discover skills (agentskills.io format). `.agents/skills` is the shared
+# location (Codex, Gemini CLI, Copilot, Cursor, ...); Claude Code only reads its own.
+SKILL_DIRS = (".agents/skills", ".claude/skills")
 
 
 def _templates() -> Traversable:
@@ -86,7 +90,8 @@ def init_workspace(
     if existing_resume and not existing_resume.is_file():
         raise ResumateError(f"{existing_resume} not found")
     written = _copy_tree(_templates() / "workspace", path, overwrite=False)
-    written += install_skills(path / ".claude" / "skills")
+    for skill_dir in SKILL_DIRS:
+        written += install_skills(path / skill_dir)
     if name:
         resume = path / "master" / "resume.yaml"
         resume.write_text(resume.read_text().replace("Jordan Rivera", name, 1))
@@ -121,7 +126,7 @@ def is_example(resume: Path) -> bool:
 
 
 def install_skills(dest: Path, *, overwrite: bool = True) -> list[Path]:
-    """Copy the bundled agent skills into `dest` (e.g. <workspace>/.claude/skills)."""
+    """Copy the bundled agent skills into `dest` (e.g. <workspace>/.agents/skills)."""
     return _copy_tree(_skills(), dest, overwrite=overwrite)
 
 

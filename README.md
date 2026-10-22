@@ -40,7 +40,8 @@ No resume file handy? Run `resumate init ~/career` and give the agent your resum
 later (a path or pasted text). Until you do, `master/resume.yaml` is sample content,
 and `resumate check` and `resumate new` remind you.
 
-For each job, in an agent session (e.g. Claude Code) opened in `~/career`:
+For each job, in an agent session (Claude Code, Codex, Gemini CLI, Copilot, Cursor, ...)
+opened in `~/career`:
 
 > I'm applying to the Staff Engineer role at Acme. I've used their product for years and
 > want to work on their reliability problems. Here's the posting: …
@@ -60,8 +61,9 @@ resumate status acme applied
 ```
 career/
   resumate.yaml              style and page-limit settings
-  AGENTS.md, CLAUDE.md       orientation for agents
-  .claude/skills/            resumate, resumate-apply, resumate-capture
+  AGENTS.md                  orientation for agents (CLAUDE.md, GEMINI.md import it)
+  .agents/skills/            resumate, resumate-apply, resumate-capture
+  .claude/skills/            the same skills, for Claude Code
   master/resume.yaml         the master resume
   stories/*.md               work anecdotes for cover letters
   supporting/                portfolio pieces, writing samples, ... (+ optional notes)
@@ -126,8 +128,15 @@ Two layouts:
 
 ## Agent skills
 
-`resumate init` installs three skills into `.claude/skills/` (Claude Code picks them up
-automatically; other agents are pointed to them by `AGENTS.md`):
+resumate works with any coding agent. It uses two open standards:
+
+- **[AGENTS.md](https://agents.md)** orients the agent to the workspace. `CLAUDE.md` and
+  `GEMINI.md` just import it, for agents that look for their own filename.
+- **[Agent Skills](https://agentskills.io)** (`SKILL.md` folders) teach the procedures.
+  `resumate init` installs them into `.agents/skills/`, the shared location read by
+  Codex, Gemini CLI, GitHub Copilot, Cursor and others, and mirrors them into
+  `.claude/skills/` for Claude Code. Agents without skill support are pointed to the
+  files by `AGENTS.md`.
 
 | Skill | Use |
 |---|---|
@@ -135,7 +144,7 @@ automatically; other agents are pointed to them by `AGENTS.md`):
 | `resumate-apply` | Research a role, tailor resume and cover letter, recommend materials, hand off for review |
 | `resumate-capture` | Interview you to grow the master resume and stories; first-time setup |
 
-After upgrading resumate, refresh them with `resumate install-skills`.
+After upgrading resumate, refresh both copies with `resumate install-skills`.
 
 ## Library use
 

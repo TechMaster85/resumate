@@ -20,6 +20,7 @@ from resumate.loader import ResumateError, load_cover_letter, load_resume, load_
 from resumate.models import Resume
 from resumate.render import render_cover_letter, render_resume
 from resumate.workspace import (
+    SKILL_DIRS,
     STATUSES,
     copy_supporting,
     find_root,
@@ -147,13 +148,14 @@ def attach(application: str, files: tuple[str, ...]) -> None:
 @click.option(
     "--dest",
     type=click.Path(file_okay=False, path_type=Path),
-    help="Target directory (default: <workspace>/.claude/skills).",
+    help="Target directory (default: <workspace>/.agents/skills and <workspace>/.claude/skills).",
 )
 def install_skills_cmd(dest: Path | None) -> None:
     """Install or update the bundled agent skills."""
-    dest = dest or require_root() / ".claude" / "skills"
-    for path in install_skills(dest):
-        click.echo(f"Wrote {path}")
+    dests = [dest] if dest else [require_root() / skill_dir for skill_dir in SKILL_DIRS]
+    for target in dests:
+        for path in install_skills(target):
+            click.echo(f"Wrote {path}")
 
 
 # --- building --------------------------------------------------------------------------
