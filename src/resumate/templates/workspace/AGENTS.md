@@ -48,3 +48,8 @@ directly and follow it.
    `resumate diff` shows the user exactly what changed.
 4. **Sound like the user.** Borrow phrasing from their stories and from what they said
    about why they want the job. Avoid generic AI cover-letter language.
+5. **Candor is input, not copy.** The user can tell you anything, including what they
+   don't know or don't enjoy. The goal is to honestly pass the resume scanner and get a
+   human to set up an interview, so what the employer reads must be true but doesn't have
+   to include every truth: keep what helps, reframe what has a strength inside it, and
+   leave the rest for interview prep in `research.md`.

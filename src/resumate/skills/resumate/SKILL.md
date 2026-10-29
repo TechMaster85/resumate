@@ -89,7 +89,7 @@ Rules:
 ---
 company: Acme
 role: Staff Engineer
-recipient: Hiring Team          # or a named person, if known
+recipient: Jane Doe            # optional: a named person, if known
 address: ["optional", "lines"]
 date: 2026-01-15                # optional; defaults to build date
 ---
@@ -104,8 +104,11 @@ Sincerely,
 Full Name
 ```
 
-- The letterhead (name, headline, contact) comes from `resume.yaml` beside the letter,
-  falling back to `master/resume.yaml`.
+- The letterhead (name, email, phone) comes from `resume.yaml` beside the letter,
+  falling back to `master/resume.yaml`. The resume's headline, location, and links are
+  left off.
+- An inside address (recipient, company, address lines) prints only when `recipient` or
+  `address` is set. Leave both out for a generic "Dear Hiring Team," letter.
 - `<!-- comments -->` never render. Use them for notes to the user.
 
 ## Sample content

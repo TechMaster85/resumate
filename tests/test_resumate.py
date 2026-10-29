@@ -125,6 +125,18 @@ def test_cover_letter_pdf(workspace: Path, tmp_path: Path):
     text = pdf_text(out)
     for expected in ("Grace Hopper", "Acme", "I love compilers.", "Built one", "Sincerely,"):
         assert expected in text
+    assert sender.headline and sender.headline not in text  # plain letterhead
+    assert sender.contact.email in text
+    assert sender.contact.location and sender.contact.location not in text
+
+
+def test_cover_letter_without_recipient_has_no_inside_address(workspace: Path, tmp_path: Path):
+    letter_path = tmp_path / "c.md"
+    letter_path.write_text("---\ncompany: Acme\n---\nDear Hiring Team,\n\nHello.\n")
+    sender = load_resume(workspace / "master" / "resume.yaml")
+    out = tmp_path / "letter.pdf"
+    render_cover_letter(load_cover_letter(letter_path), sender, out, Style())
+    assert "Acme" not in pdf_text(out)
 
 
 # --- workspace -------------------------------------------------------------------------

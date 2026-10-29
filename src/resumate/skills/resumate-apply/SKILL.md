@@ -7,6 +7,26 @@ description: Tailor a resume and cover letter for a specific job using resumate.
 
 Goal: help the user show real interest in this role and make an honest, specific case
 that they're a great fit. You prepare drafts; **the user reviews, edits, and submits.**
+
+What the application is for: honestly pass the resume scanner and get a human to set up
+an interview. Everything you write for the employer serves that goal.
+
+**Candor is input, not copy.** Encourage the user to be blunt with you: what they don't
+know, what they'd rather not do, what they like more than what the job asks for. You need
+that to tailor well. But not everything true belongs in the application. Every sentence
+the employer reads must be true; not every truth needs a sentence. For each candid thing
+the user says, decide whether it helps this employer say yes:
+
+- **Use it** if it's a reason to hire them. Keep their meaning and voice.
+- **Reframe it** if there's a strength inside it. "I like AI because I care more about
+  what the customer wants than solving technical problems" becomes "AI tools let me spend
+  more of my time on what the customer actually needs," not a confession that they find
+  technical problems less interesting.
+- **Leave it out** if it only gives a reader a reason to say no (a gap, a preference, a
+  doubt, an unflattering comparison). Note it in `research.md` for interview prep instead.
+
+Never misstate hard eligibility facts (degree status, dates, work authorization), and
+never imply something false by omission that a background check would contradict.
 Read the `resumate` skill first if you haven't, for file formats and commands.
 
 ## 0. Make sure the master resume is real
@@ -21,7 +41,9 @@ You need two things from the user. Ask for whatever is missing, and don't procee
 without the first:
 
 - **Why they're interested**, in their words. If it's thin ("seems cool"), ask one
-  follow-up: what specifically about the company, product, team, or problem?
+  follow-up: what specifically about the company, product, team, or problem? Tell them
+  they can be completely honest here: `job.md` is their private notes, and you'll decide
+  what reaches the employer.
 - **The job description** (pasted text, or a link you can fetch).
 
 Then create the folder and record both verbatim:
@@ -75,20 +97,69 @@ resumate diff <app>      # sanity-check that every change is defensible
 
 ## 4. Draft the cover letter
 
-Edit `cover_letter.md`. Aim for 250–350 words, three or four paragraphs:
+Edit `cover_letter.md`. Write for a recruiter who will skim it in under a minute, likely
+right after the resume. It should read like a confident person wrote it to one
+company, not like a template.
 
-1. **Opening**: the specific reason they want *this* job, built from their own words in
-   `job.md` and your research. No "I am writing to apply for...".
-2. **Proof**: one or two stories from `stories/` that map to the top requirements.
-   Concrete details and results, told briefly. Connect each explicitly to what the
-   company needs.
-3. **Close**: what they'd bring and a plain invitation to talk.
+**Shape**: 250–350 words, one page, three to five short paragraphs of at most four
+sentences each. No headings. **One point per paragraph**: never combine two jobs or two
+requirements in one paragraph, or the reader can't follow the argument. Every
+paragraph's first sentence should carry its point, because that's often all that gets
+read.
 
-Voice: write like the user writes. Reuse their phrasing from stories and `job.md`.
-Avoid stock phrases ("I am thrilled", "passionate about leveraging", "fast-paced
-environment", "I believe I would be a great fit"). No claims about the company you
-couldn't cite. Use a named recipient only if research found one confidently;
-otherwise "Hiring Team". Sign off with the user's name from the resume.
+**Structure (ACT: Align, Connect, Tailor):**
+
+1. **Align: who you are and why this job.** In the first two sentences, say who the
+   user is in one clause (current role, or degree and school) and the specific reason
+   they want *this* role at *this* company. Use their own words from `job.md` (filtered
+   as in *Candor is input, not copy* above), plus at most one fact from `research.md`
+   that a recruiter could verify. Name the role.
+2. **Connect: why you're a great fit.** Pick the two or three requirements ranked
+   highest in `research.md` (*What they're really looking for*) and give each its own
+   paragraph. Open with the employer's need in their terms, then the user's evidence
+   from one job, project, or story: what they did and what happened, with a number if
+   there is one ("Your help desk needs someone who can resolve tickets on their own,
+   and that's what I do now. As a ..."). The argument the reader should come away with:
+   *given what this person has done, they'll do this job well.* One strong story, told
+   briefly, beats a list of every qualification. Don't repeat the resume line by line;
+   add the context a bullet can't.
+3. **Close: interest and confidence.** Say plainly what they'd bring or take on in the
+   role, why they expect to do well (tie it to evidence already given), and invite a
+   conversation. Confident, not pleading: no "I hope", "I would be honored", or "thank
+   you for considering my application".
+
+**Tailor throughout**: mirror the company's language for its work and the posting's
+words for the job. The letter should fail if sent to a different company.
+
+**Gaps**: don't volunteer them. Show the closest real evidence plus intent ("I've built
+REST APIs in Flask and want to do the same in GraphQL") rather than "I haven't used X."
+Never a sentence of caveats, let alone a paragraph. Candid gap analysis goes in
+`research.md` for interview prep.
+
+**Sound human, not generated:**
+
+- Write like the user talks. Reuse phrasing from `job.md` and `stories/`. Contractions
+  are fine.
+- Concrete beats impressive: a system name, a number, what broke and how they fixed it.
+- Vary sentence length. Don't start most sentences with "I".
+- Avoid stock phrases: "I am writing to apply/express my interest", "I am thrilled /
+  excited to apply", "passionate about", "leverage", "results-driven",
+  "detail-oriented", "team player", "fast-paced environment", "proven track record",
+  "I believe I would be a great fit", "unique blend of skills", "make an impact".
+- Avoid generated-text tells: triplets of adjectives, "not only… but also", rhetorical
+  questions, em-dash asides in every paragraph, and a final sentence that just
+  restates the letter.
+- No claims about the company you couldn't cite.
+
+Set `recipient` only if research found a named person confidently; otherwise leave it
+unset and open with "Dear Hiring Team,". Sign off with "Sincerely," and the user's name
+from the resume.
+
+**Before handing off**, run the skim test: read only the first sentence of each
+paragraph. Together they should answer *who is this, why us, why them, what next*.
+Then read the whole thing aloud for anything the user wouldn't say. Check every claim
+traces to the master resume, stories, or the conversation, and that the body is
+250–350 words.
 
 ## 5. Supporting materials
 

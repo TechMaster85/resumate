@@ -104,8 +104,9 @@ sections:
 ```
 
 **Cover letter** (`cover_letter.md`): Markdown with front matter (`company`, `role`,
-`recipient`, optional `address` and `date`). The letterhead comes from the resume
-beside it. `<!-- comments -->` never render.
+optional `recipient`, `address`, and `date`). The letterhead (name, email, and phone)
+comes from the resume beside it; an inside address prints only for a named recipient
+or address. `<!-- comments -->` never render.
 
 **Review markers**: agents flag anything you should confirm with `TODO(review)` in a
 comment; `resumate check` lists them all.

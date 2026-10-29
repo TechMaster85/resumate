@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
-from reportlab.platypus import Flowable, HRFlowable, Paragraph, Spacer
+from reportlab.platypus import Flowable, Paragraph, Spacer
 
 from resumate.markup import blocks, inline
 from resumate.models import CoverLetter, Resume, Style
@@ -29,16 +29,19 @@ def render_cover_letter(letter: CoverLetter, sender: Resume, out: Path, style: S
         out, style, title=f"{sender.name} – {subject}", author=sender.name, subject=subject
     )
 
-    flow: list[Flowable] = header(sender.name, sender.headline, sender.contact, typo)
+    # A plain letterhead: name, email, and phone, just how to reach the sender. The resume's
+    # headline, location, and links are there for ATS matching and would clutter a letter.
+    contact = sender.contact.model_copy(update={"location": None, "links": []})
+    flow: list[Flowable] = header(sender.name, None, contact, typo)
     flow += [
-        Spacer(1, style.base_size * 0.4),
-        HRFlowable(width="100%", thickness=0.6, color=typo.accent),
         Spacer(1, style.base_size * 1.6),
         Paragraph(_date_text(letter.date), typo.letter_body),
     ]
 
-    recipient = [r for r in (letter.recipient, letter.company, *letter.address) if r]
-    if recipient:
+    # An inside address only when there's someone specific to address; for "Dear Hiring
+    # Team," the greeting already says it.
+    if letter.recipient or letter.address:
+        recipient = [r for r in (letter.recipient, letter.company, *letter.address) if r]
         flow.append(Paragraph("<br/>".join(inline(r) for r in recipient), typo.letter_body))
 
     for block in blocks(letter.body):

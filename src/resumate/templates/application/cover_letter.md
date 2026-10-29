@@ -1,7 +1,7 @@
 ---
 company: {{company}}
 role: {{role}}
-recipient: Hiring Team
+# recipient: Jane Doe                          # only for a named person; prints an inside address
 # address: ["123 Main St", "City, ST 00000"]   # optional
 # date: 2026-01-15                             # optional; defaults to the build date
 ---
@@ -11,11 +11,11 @@ recipient: Hiring Team
 
 Dear Hiring Team,
 
-<!-- Opening: why this role at this company, specifically. -->
+<!-- Align: who you are, and why this role at this company, specifically. -->
 
-<!-- Middle: one or two stories that prove fit for what they need most. -->
+<!-- Connect: your strongest evidence for the two or three things they need most. -->
 
-<!-- Close: what you'd bring, and an invitation to talk. -->
+<!-- Close: what you'd bring, why you'll do well, and an invitation to talk. -->
 
 Sincerely,
 <!-- Your name -->
