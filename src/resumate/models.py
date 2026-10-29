@@ -37,9 +37,12 @@ class _Model(BaseModel):
 
 
 class Style(_Model):
-    # classic: centered serif header, underlined headings, dates right of each title.
+    # classic: centered serif header, underlined headings, one line per entry heading.
     # modern: left-aligned sans header in the accent color, ruled headings, org/location line.
     layout: Literal["classic", "modern"] = "classic"
+    # inline: dates follow the title on the same line, so every PDF parser keeps them with
+    # their entry. right: flush right, which some parsers detach from the entry.
+    date_align: Literal["inline", "right"] = "inline"
     font: Literal["Helvetica", "Times-Roman", "Courier"] | None = None  # None: layout's default
     accent: str = "#1F3A5F"  # modern layout only
     page_size: Literal["letter", "a4"] = "letter"
@@ -80,10 +83,11 @@ class Entry(_Model):
 
     @property
     def date_range(self) -> str:
+        # Plain hyphens: some older parsers misread en/em dashes in date ranges.
         if self.dates:
-            return self.dates
+            return self.dates.replace("–", "-").replace("—", "-")
         if self.start and self.end:
-            return f"{self.start} – {self.end}"
+            return f"{self.start} - {self.end}"
         return self.start or self.end or ""
 
 

@@ -1,4 +1,6 @@
 import datetime as dt
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -9,7 +11,7 @@ from resumate.check import pdf_text
 from resumate.cli import main
 from resumate.loader import ResumateError, load_cover_letter, load_resume
 from resumate.markup import blocks, inline
-from resumate.models import Resume, Style
+from resumate.models import Entry, Resume, Style
 from resumate.render import render_cover_letter, render_resume
 from resumate.workspace import (
     init_workspace,
@@ -104,6 +106,39 @@ def test_resume_pdf_is_extractable_and_excludes_comments(workspace: Path, tmp_pa
     assert "Experience" in text
     assert "15 min to 4 s" in text
     assert "hackathon" not in text  # commented out in the example master
+
+
+@pytest.mark.skipif(not shutil.which("pdftotext"), reason="needs poppler's pdftotext")
+@pytest.mark.parametrize("layout", ["classic", "modern"])
+def test_dates_stay_with_their_entries(workspace: Path, tmp_path: Path, layout: str):
+    # Poppler's default reading order moves flush-right dates to the end of the page.
+    resume = load_resume(workspace / "master" / "resume.yaml")
+    out = tmp_path / "resume.pdf"
+    render_resume(resume, out, Style(layout=layout))
+    text = subprocess.run(
+        ["pdftotext", str(out), "-"], capture_output=True, text=True, check=True
+    ).stdout
+    lines = [line for line in text.splitlines() if line.strip()]
+    for section in resume.sections:
+        if not section.entries:
+            continue
+        start = next(n for n, line in enumerate(lines) if line.lower() == section.title.lower())
+        for entry in section.entries:
+            line = next(line for line in lines[start:] if line.startswith(entry.title))
+            assert f"| {entry.date_range}" in line
+
+
+def test_date_ranges_use_plain_hyphens():
+    assert Entry(title="A", start="Mar 2022", end="Present").date_range == "Mar 2022 - Present"
+    assert Entry(title="A", dates="2018–2022").date_range == "2018-2022"
+
+
+def test_right_aligned_dates_still_render(workspace: Path, tmp_path: Path):
+    resume = load_resume(workspace / "master" / "resume.yaml")
+    out = tmp_path / "resume.pdf"
+    render_resume(resume, out, Style(date_align="right"))
+    text = pdf_text(out)
+    assert "Mar 2022 - Present" in text and "| Mar 2022" not in text
 
 
 def test_page_count_reported(workspace: Path, tmp_path: Path):

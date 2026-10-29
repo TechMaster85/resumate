@@ -2,6 +2,8 @@
 style:
   layout: classic        # classic: centered serif header, underlined headings, dates beside titles
                          # modern: left-aligned sans header, accent color, ruled headings
+  date_align: inline     # inline: `Title | Mar 2022 - Present`, keeps dates with their entry
+                         # right: dates flush right; some parsers detach them from the entry
   # font: Times-Roman    # override the layout's font: Helvetica | Times-Roman | Courier
   accent: "#1F3A5F"      # modern layout: color for your name, headings, and links
   page_size: letter      # letter | a4

@@ -122,10 +122,15 @@ extracts. Style (font, accent color, size, margins, page size, page limit) is se
 Two layouts:
 
 - **classic** (default): centered serif header with your name in capitals, bold
-  underlined section headings, one bold line per entry with the date in italics on the
-  right. The traditional CS resume format.
+  underlined section headings, one bold line per entry with the date in italics after
+  it. The traditional CS resume format.
 - **modern**: left-aligned sans-serif header in an accent color, ruled section headings,
   and a separate italic line for organization and location.
+
+Dates go on the same line as the entry heading (`Senior Engineer | Mar 2022 - Present`),
+because some ATS parsers detach flush-right dates from their entry and lose your
+timeline. Set `date_align: right` in `style:` for the traditional flush-right look.
+Date ranges use plain hyphens, which older parsers read more reliably than en dashes.
 
 ## Agent skills
 

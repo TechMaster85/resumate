@@ -66,17 +66,36 @@ def _url(entry: Entry, typo: Typography) -> str:
     return f'<a href="{href}"{color}>{inline(entry.url)}</a>'
 
 
+def _inline_row(left: str, right: str, right_style: ParagraphStyle, italic: bool) -> Paragraph:
+    """`left | right` on one line, so the right text stays next to its entry when parsed."""
+    if right:
+        right = f"<i>{inline(right)}</i>" if italic else inline(right)
+        left = f"{left} | {right}" if left else right
+    return Paragraph(left, right_style.parent)
+
+
 def _entry_heading(entry: Entry, typo: Typography) -> list[Flowable]:
     url = _url(entry, typo)
+    inline_dates = typo.style.date_align == "inline"
     if typo.classic:
-        # One line: **Title – Org, Location** – url, with the date in italics on the right.
+        # One line: **Title – Org, Location** – url, with the date in italics on the right
+        # (or after a `|` when inline).
         org = ", ".join(p for p in (entry.org, entry.location) if p)
         title = " – ".join(inline(p) for p in (entry.title, org) if p)
         left = f"<b>{title}</b>" + (f" – {url}" if url else "")
+        if inline_dates:
+            return [_inline_row(left, entry.date_range, typo.right_italic, italic=True)]
         return [_row(left, entry.date_range, typo.right_italic)]
 
     left = f"<b>{inline(entry.title)}</b>" + (f"  {url}" if url else "")
-    head: list[Flowable] = [_row(left, entry.date_range, typo.right)]
+    if inline_dates:
+        head: list[Flowable] = [_inline_row(left, entry.date_range, typo.right, italic=False)]
+        if entry.org or entry.location:
+            org = f"<i>{inline(entry.org)}</i>" if entry.org else ""
+            head.append(_inline_row(org, entry.location or "", typo.right_italic, italic=True))
+        return head
+
+    head = [_row(left, entry.date_range, typo.right)]
     if entry.org or entry.location:
         org = f"<i>{inline(entry.org or '')}</i>"
         head.append(_row(org, entry.location or "", typo.right_italic))

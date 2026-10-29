@@ -46,7 +46,7 @@ sections:                       # rendered in this order
         org: Company
         location: Remote
         start: Mar 2022         # free text
-        end: Present            # or use `dates: 2018 – 2022` instead of start/end
+        end: Present            # or use `dates: 2018 - 2022` instead of start/end
         url: https://github.com/user/repo   # optional, shown after the title
         summary: optional one-line context under the heading (e.g. "Source available on request")
         bullets:
@@ -65,9 +65,14 @@ style:                          # optional per-file overrides of resumate.yaml s
 ```
 
 Layouts (`style.layout`): **classic** (default) is a centered serif header, bold
-underlined section headings, one bold line per entry (`Title – Org, Location – url`) with
-the date in italics on the right, and skills as bullets. **modern** is a left-aligned sans
+underlined section headings, one bold line per entry (`Title – Org, Location – url`)
+followed by the date in italics, and skills as bullets. **modern** is a left-aligned sans
 header in the accent color, ruled headings, and a second italic line for org/location.
+Dates follow the heading after a `|` (`style.date_align: inline`, the default) so every
+PDF parser keeps them with their entry; `date_align: right` puts them flush right, which
+looks traditional but some ATS parsers detach right-aligned dates from the entry. Date
+ranges are written with a plain hyphen (`Mar 2022 - Present`); en and em dashes in
+`dates` are converted, since some older parsers misread them.
 In classic, `title` can hold the whole heading (e.g. `University of Michigan, Ann Arbor, MI
 – B.S.E. Computer Science`) when a source resume orders it differently.
 
