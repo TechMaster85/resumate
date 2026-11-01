@@ -5,11 +5,11 @@ description: Tailor a resume and cover letter for a specific job using resumate.
 
 # Tailor an application
 
-Goal: help the user show real interest in this role and make an honest, specific case
-that they're a great fit. You prepare drafts; **the user reviews, edits, and submits.**
+Goal: get past the resume filter honestly, so a person sets up an interview. Make the
+real match visible in the posting's own words, and make the letter sound like the user.
+You prepare drafts; **the user reviews, edits, and submits.**
 
-What the application is for: honestly pass the resume scanner and get a human to set up
-an interview. Everything you write for the employer serves that goal.
+Everything you write for the employer serves that goal.
 
 **Candor is input, not copy.** Encourage the user to be blunt with you: what they don't
 know, what they'd rather not do, what they like more than what the job asks for. You need

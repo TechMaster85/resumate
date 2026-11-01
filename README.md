@@ -3,8 +3,8 @@
 Your career materials as plain text, tailored per job by an AI agent, compiled into
 clean, ATS-friendly PDFs that you review before anything gets sent.
 
-resumate doesn't run your job search. It helps you show genuine interest in a role
-and make a specific, honest case that you're a great fit:
+resumate doesn't run your job search. The goal is to get past resume filters honestly
+so you get an interview:
 
 1. You keep a **master resume** (everything you've done, at whatever length it takes)
    and a few **work stories** in plain text. Each application copies the master, then

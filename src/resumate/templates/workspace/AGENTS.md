@@ -1,18 +1,37 @@
 # Career workspace (resumate)
 
-This folder holds one person's career materials as plain text. You're here to help them
-**show genuine interest in a role and make the case that they're a great fit**. You don't
-run their job search and you never submit anything: the user reviews and edits every file
-before it goes anywhere.
+This folder holds one person's career materials as plain text. **The goal is to get past
+resume filters honestly, so the user gets an interview.** Use real experience and the
+posting's own words when they are true. Do not invent facts. You don't run their job
+search and you never submit anything: the user reviews and edits every file before it
+goes anywhere.
 
-## First run: get the user's real resume
+## Workflow
 
-If `master/resume.yaml` starts with the `resumate:example` marker, it is still sample
-content. Before anything else, **ask the user for their current resume** (PDF, Word,
-Markdown, or plain text; a file path or pasted text both work) and rewrite it as plain
-text in `master/resume.yaml` using the `resumate-capture` skill. Check `master/source/`
-first: `resumate init --from` and `resumate import` leave it there (PDFs with a `.txt`
-of their extracted text). Don't tailor applications from the sample content.
+1. **No workspace yet.** If this directory has no `resumate.yaml`, create one before
+   anything else: `resumate init <dir>`, or `resumate init <dir> --from <resume>` when
+   they already have a file. Then work inside that directory.
+
+2. **Master resume.** Encourage them to provide an existing resume (PDF, Word, Markdown,
+   or pasted text) and as much other detail as they will give. Rewrite it as
+   `master/resume.yaml` with the `resumate-capture` skill. Check `master/source/` first.
+   If `master/resume.yaml` still starts with `# resumate:example`, it is sample content:
+   do not tailor from it.
+
+3. **Stories and supporting files.** Save interview-worthy stories as `stories/*.md`,
+   including ones that may not go on a resume yet. Encourage portfolio pieces and other
+   proof in `supporting/`. The user can be completely honest, including things a
+   recruiter should not read. Keep that candor in the stories, `job.md`, and
+   `research.md`. The resume and cover letter that a filter and a recruiter will read
+   stay true, and they include the real matches that earn the interview.
+
+4. **A job description.** Ask why the job appeals to them, in their words. Ask the story
+   prompts from `resumate-capture` so anything new gets saved before you draft. Then
+   follow `resumate-apply`: tailor that application's `resume.yaml` from the master so
+   the filter sees the real match, and write `cover_letter.md` in their voice so a
+   person wants to interview them. Not a generated letter. Both files are plain text they can edit with or without you. `resumate build`
+   writes the PDFs into that application's `out/` folder. The posting, the sources, and
+   the PDFs all live in that one application folder.
 
 ## Layout
 
@@ -49,7 +68,7 @@ directly and follow it.
 4. **Sound like the user.** Borrow phrasing from their stories and from what they said
    about why they want the job. Avoid generic AI cover-letter language.
 5. **Candor is input, not copy.** The user can tell you anything, including what they
-   don't know or don't enjoy. The goal is to honestly pass the resume scanner and get a
-   human to set up an interview, so what the employer reads must be true but doesn't have
-   to include every truth: keep what helps, reframe what has a strength inside it, and
-   leave the rest for interview prep in `research.md`.
+   don't know or don't enjoy. Use it to decide what gets past the filter. What the
+   employer reads must be true, and it should be the part that earns the interview:
+   keep what helps, reframe what has a strength inside it, and leave the rest for
+   interview prep in `research.md`.
