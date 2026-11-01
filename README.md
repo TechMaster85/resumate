@@ -19,11 +19,13 @@ so you get an interview:
 
 ## Install
 
+From a checkout of this repo:
+
 ```bash
-pip install resumate        # or: uv tool install resumate
+uv tool install -e .
 ```
 
-From a checkout: `uv tool install -e .` (or `uv sync` and prefix commands with `uv run`).
+Or `uv sync` and prefix commands with `uv run`.
 
 ## Quick start
 
