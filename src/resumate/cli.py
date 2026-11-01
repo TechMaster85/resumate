@@ -13,6 +13,7 @@ from resumate.check import (
     Finding,
     check_cover_letter,
     check_resume,
+    page_limit_applies,
     pdf_text,
     review_markers,
 )
@@ -225,7 +226,7 @@ def build(target: str, out_dir: Path | None, open_after: bool) -> None:
         pages = render_resume(resume, out, style)
         limit = style.merged(resume.style).max_pages
         click.echo(f"Built {out} ({pages} page{'s' * (pages != 1)})")
-        if pages > limit:
+        if page_limit_applies(resume_path) and pages > limit:
             click.secho(
                 f"  warning: over the {limit}-page limit; trim or comment out content", fg="yellow"
             )

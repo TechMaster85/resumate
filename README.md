@@ -6,8 +6,9 @@ clean, ATS-friendly PDFs that you review before anything gets sent.
 resumate doesn't run your job search. It helps you show genuine interest in a role
 and make a specific, honest case that you're a great fit:
 
-1. You keep a **master resume** (everything you've done) and a few **work stories** in
-   plain text.
+1. You keep a **master resume** (everything you've done, at whatever length it takes)
+   and a few **work stories** in plain text. Each application copies the master, then
+   comments out positions and bullets until that one application fits the page limit.
 2. For a job you care about, you tell your agent **why you're interested** and paste
    the **job description**.
 3. The agent researches the company, **tailors a resume** (by commenting out and

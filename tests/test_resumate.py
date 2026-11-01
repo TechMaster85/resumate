@@ -249,6 +249,28 @@ def test_cli_reports_errors_cleanly(workspace: Path, monkeypatch: pytest.MonkeyP
     assert "Traceback" not in result.output
 
 
+def test_master_resume_skips_the_page_limit(workspace: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.chdir(workspace)
+    bullets = "\n".join(
+        f"          - Delivered lab result {i} with a measured outcome" for i in range(50)
+    )
+    (workspace / "master" / "resume.yaml").write_text(
+        "name: Ada Lovelace\ncontact:\n  email: ada@example.com\nsections:\n"
+        "  - title: Experience\n    entries:\n      - title: Engineer\n        org: Lab\n"
+        f"        bullets:\n{bullets}\n"
+    )
+    runner = CliRunner()
+    master = runner.invoke(main, ["check", "master"])
+    assert master.exit_code == 0, master.output
+    assert "page" not in master.output.lower()
+
+    app = new_application(workspace, "Acme", "Engineer", today=TODAY)
+    # Drop the sample marker warning's noise: the copy has no marker. Page limit still applies.
+    application = runner.invoke(main, ["check", app.name])
+    assert application.exit_code == 1
+    assert "pages" in application.output
+
+
 def test_sample_master_is_flagged_until_replaced(workspace: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(workspace)
     runner = CliRunner()

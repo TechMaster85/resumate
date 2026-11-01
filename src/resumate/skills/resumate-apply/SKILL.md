@@ -75,7 +75,8 @@ If you can't browse, say so, research from the posting alone, and note that in
 
 ## 3. Tailor the resume
 
-Edit the application's `resume.yaml` (already a copy of the master):
+Edit the application's `resume.yaml` (already a copy of the master). The master is a
+warehouse and is allowed to run long. This copy is what has to fit on the page:
 
 - **Select**: comment out (`#`) bullets, entries, and skills that don't serve this
   role. Keep the master's order of sections unless there's a clear reason to change it.

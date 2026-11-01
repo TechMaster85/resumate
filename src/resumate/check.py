@@ -62,6 +62,11 @@ def _check_text(path: Path, raw: str) -> list[Finding]:
     return [Finding("warning", path.name, f"characters the PDF fonts can't render: {chars}")]
 
 
+def page_limit_applies(path: Path) -> bool:
+    """Application resumes must fit max_pages. The master is a warehouse and can run long."""
+    return not (path.parent.name == "master" and path.name == "resume.yaml")
+
+
 def check_resume(path: Path, root: Path | None) -> tuple[list[Finding], Resume | None]:
     raw = path.read_text(encoding="utf-8")
     findings = review_markers(path) + _check_text(path, raw)
@@ -91,7 +96,7 @@ def check_resume(path: Path, root: Path | None) -> tuple[list[Finding], Resume |
         pdf = Path(tmp) / "resume.pdf"
         pages = render_resume(resume, pdf, load_settings(root).style)
         text = pdf_text(pdf)
-    if pages > style.max_pages:
+    if page_limit_applies(path) and pages > style.max_pages:
         findings.append(
             Finding(
                 "error",

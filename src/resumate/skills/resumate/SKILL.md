@@ -137,7 +137,7 @@ flag things the user must confirm as `# TODO(review): ...` (YAML) or
 | `resumate new COMPANY ROLE [--url URL]` | Create an application folder; prints its path |
 | `resumate list` | Applications with status |
 | `resumate build [TARGET] [--open] [-o DIR]` | Compile an application folder, `master/`, or one `.yaml`/`.md` file to `out/` |
-| `resumate check [TARGET]` | Validate, test page count and text extraction, list review markers; exit 1 on errors |
+| `resumate check [TARGET]` | Validate, test an application's page count and text extraction, list review markers; exit 1 on errors. The master resume is not held to the page limit. |
 | `resumate diff [APP]` | Unified diff of an application's resume vs. master |
 | `resumate text FILE.pdf` | Print the text an ATS would extract |
 | `resumate status APP STATUS` | drafting, ready, applied, interviewing, offer, rejected, withdrawn |
@@ -147,6 +147,10 @@ flag things the user must confirm as `# TODO(review): ...` (YAML) or
 `APP` accepts a path, the folder name, or any unique substring of it (e.g. `acme`).
 
 ## Fitting on the page
+
+The master resume holds every position and bullet and can run as long as it needs.
+Trim when tailoring an application, not in the master. `check` enforces `max_pages`
+on application resumes only.
 
 When `check` reports too many pages, in order of preference: comment out the least
 relevant bullets, drop older or less relevant entries, tighten long bullets (most
