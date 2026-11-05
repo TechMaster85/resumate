@@ -100,8 +100,30 @@ class SkillGroup(_Model):
         return self.items if isinstance(self.items, str) else ", ".join(self.items)
 
 
+class Certificate(_Model):
+    """A certification: its name, who issued it, and when. Everything but name is optional."""
+
+    name: Text
+    issuer: Text | None = None
+    issued: Text | None = None
+    expires: Text | None = None
+    credential_id: Text | None = None
+    url: Text | None = None  # verification link, shown after the issuer
+
+    @property
+    def date_text(self) -> str:
+        # Plain hyphens: some older parsers misread en/em dashes in dates.
+        issued = (self.issued or "").replace("–", "-").replace("—", "-")
+        expires = (self.expires or "").replace("–", "-").replace("—", "-")
+        if issued and expires:
+            return f"{issued} (expires {expires})"
+        if expires:
+            return f"expires {expires}"
+        return issued
+
+
 class Section(_Model):
-    """A resume section with at most one of entries / skills / bullets / text.
+    """A resume section with at most one of entries / skills / certificates / bullets / text.
 
     A section left with no content (everything commented out) is skipped when rendering.
     """
@@ -109,22 +131,25 @@ class Section(_Model):
     title: Text
     entries: list[Entry] | None = None
     skills: list[SkillGroup] | None = None
+    certificates: list[Certificate] | None = None
     bullets: list[Text] | None = None
     text: Text | None = None
 
     @model_validator(mode="after")
     def _one_kind(self) -> Section:
-        kinds = [k for k in ("entries", "skills", "bullets", "text") if getattr(self, k)]
+        kinds = [
+            k for k in ("entries", "skills", "certificates", "bullets", "text") if getattr(self, k)
+        ]
         if len(kinds) > 1:
             raise ValueError(
-                f"section {self.title!r} must have only one of entries, skills, bullets, "
-                f"or text (found: {', '.join(kinds)})"
+                f"section {self.title!r} must have only one of entries, skills, "
+                f"certificates, bullets, or text (found: {', '.join(kinds)})"
             )
         return self
 
     @property
     def is_empty(self) -> bool:
-        return not (self.entries or self.skills or self.bullets or self.text)
+        return not (self.entries or self.skills or self.certificates or self.bullets or self.text)
 
 
 class Resume(_Model):

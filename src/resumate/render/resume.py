@@ -18,7 +18,7 @@ from reportlab.platypus import (
 )
 
 from resumate.markup import inline
-from resumate.models import Entry, Resume, Section, Style
+from resumate.models import Certificate, Entry, Resume, Section, Style
 from resumate.render.common import Typography, header, make_doc
 
 _NO_PADDING = TableStyle(
@@ -58,12 +58,16 @@ def _row(left: str, right: str, right_style: ParagraphStyle) -> Table:
     )
 
 
-def _url(entry: Entry, typo: Typography) -> str:
-    if not entry.url:
+def _link(url: str, typo: Typography) -> str:
+    if not url:
         return ""
-    href = entry.url if "://" in entry.url else f"https://{entry.url}"
+    href = url if "://" in url else f"https://{url}"
     color = f' color="{typo.link_color}"' if typo.link_color else ""
-    return f'<a href="{href}"{color}>{inline(entry.url)}</a>'
+    return f'<a href="{href}"{color}>{inline(url)}</a>'
+
+
+def _url(entry: Entry, typo: Typography) -> str:
+    return _link(entry.url or "", typo)
 
 
 def _inline_row(left: str, right: str, right_style: ParagraphStyle, italic: bool) -> Paragraph:
@@ -102,6 +106,33 @@ def _entry_heading(entry: Entry, typo: Typography) -> list[Flowable]:
     return head
 
 
+def _certificate_detail(cert: Certificate, typo: Typography) -> str:
+    """Issuer, credential id, and verification link. The date stays on the name line."""
+    parts: list[str] = []
+    if cert.issuer:
+        parts.append(inline(cert.issuer))
+    if cert.credential_id:
+        parts.append(f"Credential ID {inline(cert.credential_id)}")
+    if link := _link(cert.url or "", typo):
+        parts.append(link)
+    return " – ".join(parts)
+
+
+def _certificate(cert: Certificate, typo: Typography) -> list[Flowable]:
+    # Dates share the name's line, as they do for jobs, so a parser keeps them together.
+    # Issuer and credential go underneath: verification URLs are too long for that line.
+    left = f"<b>{inline(cert.name)}</b>"
+    date_style = typo.right_italic if typo.classic else typo.right
+    if typo.style.date_align == "inline":
+        row: Flowable = _inline_row(left, cert.date_text, date_style, italic=typo.classic)
+    else:
+        row = _row(left, cert.date_text, date_style)
+    block = [row]
+    if detail := _certificate_detail(cert, typo):
+        block.append(Paragraph(detail, typo.entry_sub))
+    return [Spacer(1, typo.style.base_size * 0.5), KeepTogether(block)]
+
+
 def _entry(entry: Entry, typo: Typography) -> list[Flowable]:
     head = _entry_heading(entry, typo)
     if entry.summary:
@@ -138,6 +169,10 @@ def _section(section: Section, typo: Typography) -> list[Flowable]:
                 flow.append(Paragraph(text, typo.bullet, bulletText="•"))
             else:
                 flow.append(Paragraph(text, typo.body))
+    elif section.certificates:
+        for i, cert in enumerate(section.certificates):
+            items = _certificate(cert, typo)
+            flow += items[1:] if i == 0 else items
     elif section.bullets:
         flow += _bullets(section.bullets, typo)
     elif section.text:

@@ -78,8 +78,9 @@ If you can't browse, say so, research from the posting alone, and note that in
 Edit the application's `resume.yaml` (already a copy of the master). The master is a
 warehouse and is allowed to run long. This copy is what has to fit on the page:
 
-- **Select**: comment out (`#`) bullets, entries, and skills that don't serve this
-  role. Keep the master's order of sections unless there's a clear reason to change it.
+- **Select**: comment out (`#`) bullets, entries, skills, and certificates that don't
+  serve this role. Keep the master's order of sections unless there's a clear reason to
+  change it.
 - **Order**: within each entry, move the most relevant bullets to the top.
 - **Reframe**: reword bullets to foreground what this role cares about, and mirror the
   posting's terminology where it's *accurate* (ATS keyword matching is literal: if they

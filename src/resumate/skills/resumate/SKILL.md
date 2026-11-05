@@ -57,7 +57,15 @@ sections:                       # rendered in this order
       - category: Languages
         items: Python, Go       # string or list
   - title: Certifications
-    bullets: [AWS Solutions Architect, ...]
+    certificates:               # name required; every other field optional
+      - name: AWS Certified Solutions Architect - Associate
+        issuer: Amazon Web Services
+        issued: Jun 2024        # free text
+        expires: Jun 2027       # omit when it doesn't expire
+        credential_id: SAA-EXAMPLE
+        url: https://example.com/certs/saa   # verification link
+  - title: Awards
+    bullets: [Dean's List, team MVP]
   - title: Interests
     text: A single paragraph.
 style:                          # optional per-file overrides of resumate.yaml style
@@ -72,13 +80,16 @@ Dates follow the heading after a `|` (`style.date_align: inline`, the default) s
 PDF parser keeps them with their entry; `date_align: right` puts them flush right, which
 looks traditional but some ATS parsers detach right-aligned dates from the entry. Date
 ranges are written with a plain hyphen (`Mar 2022 - Present`); en and em dashes in
-`dates` are converted, since some older parsers misread them.
+`dates`, `issued`, and `expires` are converted, since some older parsers misread them.
+A certificate keeps the date on the name's line. The issuer, credential id, and url
+follow on the next line, in italics. With `expires` set, the date reads
+`Jun 2024 (expires Jun 2027)`.
 In classic, `title` can hold the whole heading (e.g. `University of Michigan, Ann Arbor, MI
 – B.S.E. Computer Science`) when a source resume orders it differently.
 
 Rules:
-- Each section has one of `entries`, `skills`, `bullets`, `text`. A section whose
-  content is all commented out is skipped.
+- Each section has one of `entries`, `skills`, `certificates`, `bullets`, `text`. A section
+  whose content is all commented out is skipped.
 - Unknown keys are errors (catches typos). Run `resumate check` after editing.
 - Inline Markdown in any text field: `**bold**`, `*italic*`, `[label](url)`.
 - `#` comments are how content is excluded. Preserve the master's structure when

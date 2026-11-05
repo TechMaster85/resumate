@@ -45,6 +45,8 @@ Write bullets as **action + what + measurable result**, one or two lines each. A
 to the right entry in `master/resume.yaml`. It's fine for the master to hold more than
 fits on a page; comment out ones they consider weak rather than deleting them.
 
+When the user mentions a certification, add it under `certificates` (see the resumate skill).
+
 ## Writing a story
 
 Stories power cover letters, so capture the texture a bullet can't. Ask about one

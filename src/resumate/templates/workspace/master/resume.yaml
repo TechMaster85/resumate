@@ -10,8 +10,9 @@
 #
 # Format notes:
 #   - Inline Markdown works in any text: **bold**, *italic*, [link text](https://...)
-#   - Each section has one of: entries, skills, bullets, or text
+#   - Each section has one of: entries, skills, certificates, bullets, or text
 #   - Entries take: title, org, location, start, end (or `dates`), summary, bullets
+#   - Certificates take: name, issuer, issued, expires, credential_id, url
 #   - Put numbers in bullets whenever you can; agents can't invent metrics for you.
 #   - It's fine to keep a few more bullets than you'd ever use: a richer master
 #     gives agents more to choose from when tailoring.
@@ -81,3 +82,12 @@ sections:
         items: Kubernetes, Kafka, Flink, PostgreSQL, Terraform, AWS
       - category: Practices
         items: Distributed systems, SRE / observability, API design, technical mentorship
+
+  - title: Certifications
+    certificates:
+      - name: AWS Certified Solutions Architect - Associate
+        issuer: Amazon Web Services
+        issued: Jun 2024
+        expires: Jun 2027
+        credential_id: SAA-EXAMPLE
+        url: https://example.com/certs/saa

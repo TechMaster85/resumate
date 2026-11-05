@@ -11,7 +11,7 @@ from resumate.check import pdf_text
 from resumate.cli import main
 from resumate.loader import ResumateError, load_cover_letter, load_resume
 from resumate.markup import blocks, inline
-from resumate.models import Entry, Resume, Style
+from resumate.models import Certificate, Entry, Resume, Style
 from resumate.render import render_cover_letter, render_resume
 from resumate.workspace import (
     init_workspace,
@@ -49,6 +49,39 @@ def test_blocks_paragraphs_and_bullets():
 
 
 # --- models and loading ----------------------------------------------------------------
+
+
+def test_certificate_round_trip(tmp_path: Path):
+    path = tmp_path / "r.yaml"
+    path.write_text(
+        "name: A\nsections:\n  - title: Certifications\n    certificates:\n"
+        "      - name: AWS Certified Solutions Architect\n        issued: 2024\n"
+        "        expires: 2027-06-01\n"
+        "  - title: Hidden\n    certificates:\n      # - name: Commented out\n"
+    )
+    resume = load_resume(path)
+    cert = resume.sections[0].certificates[0]
+    assert cert.issued == "2024" and cert.expires == "2027-06-01"
+    assert resume.sections[1].is_empty
+    with pytest.raises(ResumateError, match="organisation"):
+        path.write_text(
+            "name: A\nsections:\n  - title: Certifications\n    certificates:\n"
+            "      - name: AWS\n        organisation: Amazon\n"
+        )
+        load_resume(path)
+    with pytest.raises(ValidationError, match="only one of"):
+        Resume.model_validate(
+            {
+                "name": "A",
+                "sections": [
+                    {
+                        "title": "X",
+                        "entries": [{"title": "Job"}],
+                        "certificates": [{"name": "Cert"}],
+                    }
+                ],
+            }
+        )
 
 
 def test_yaml_scalars_coerced_to_text(tmp_path: Path):
@@ -106,6 +139,11 @@ def test_resume_pdf_is_extractable_and_excludes_comments(workspace: Path, tmp_pa
     assert "Experience" in text
     assert "15 min to 4 s" in text
     assert "hackathon" not in text  # commented out in the example master
+    assert "AWS Certified Solutions Architect - Associate" in text
+    assert "Amazon Web Services" in text
+    assert "Credential ID SAA-EXAMPLE" in text
+    assert "example.com/certs/saa" in text
+    assert "Jun 2024 (expires Jun 2027)" in text
 
 
 @pytest.mark.skipif(not shutil.which("pdftotext"), reason="needs poppler's pdftotext")
@@ -131,6 +169,35 @@ def test_dates_stay_with_their_entries(workspace: Path, tmp_path: Path, layout: 
 def test_date_ranges_use_plain_hyphens():
     assert Entry(title="A", start="Mar 2022", end="Present").date_range == "Mar 2022 - Present"
     assert Entry(title="A", dates="2018–2022").date_range == "2018-2022"
+
+
+def test_certificate_dates_use_plain_hyphens():
+    assert Certificate(name="A", issued="Jun 2024", expires="Jun 2027").date_text == (
+        "Jun 2024 (expires Jun 2027)"
+    )
+    assert Certificate(name="A", issued="2018–2020").date_text == "2018-2020"
+    assert Certificate(name="A", expires="Jun 2027").date_text == "expires Jun 2027"
+    assert Certificate(name="A").date_text == ""
+
+
+@pytest.mark.skipif(not shutil.which("pdftotext"), reason="needs poppler's pdftotext")
+@pytest.mark.parametrize("layout", ["classic", "modern"])
+def test_certificate_dates_stay_with_the_name(tmp_path: Path, layout: str):
+    path = tmp_path / "r.yaml"
+    path.write_text(
+        "name: Ada Lovelace\nsections:\n  - title: Certifications\n    certificates:\n"
+        "      - name: Google Cybersecurity Certificate\n        issuer: Google\n"
+        "        issued: Nov 2026\n        credential_id: DEMO-123\n"
+        "        url: https://example.com/certs/google\n"
+    )
+    out = tmp_path / "resume.pdf"
+    render_resume(load_resume(path), out, Style(layout=layout))
+    text = subprocess.run(
+        ["pdftotext", str(out), "-"], capture_output=True, text=True, check=True
+    ).stdout
+    line = next(line for line in text.splitlines() if "Google Cybersecurity Certificate" in line)
+    assert "| Nov 2026" in line
+    assert "Google" in text and "DEMO-123" in text and "example.com/certs/google" in text
 
 
 def test_right_aligned_dates_still_render(workspace: Path, tmp_path: Path):

@@ -104,6 +104,11 @@ sections:
   - title: Skills
     skills:
       - { category: Languages, items: "Python, Go, SQL" }
+  - title: Certifications
+    certificates:
+      - name: AWS Certified Solutions Architect - Associate
+        issuer: Amazon Web Services
+        issued: Jun 2024
 ```
 
 **Cover letter** (`cover_letter.md`): Markdown with front matter (`company`, `role`,
