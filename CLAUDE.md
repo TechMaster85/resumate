@@ -12,3 +12,8 @@ ATS-friendly PDFs, plus agent skills that ship inside the package.
   agents rely on the skill as their reference.
 - PDFs must stay ATS-safe: standard PDF fonts, single column, real text in reading order.
   Tests assert on `pdf_text()` extraction; verify visual changes by rendering a PDF.
+- Defaults follow real Workday autofill tests (see CHANGES.md): modern layout, stacked
+  entry headings (`Title | dates` / `Org | Location`), inline dates, a "Summary" heading.
+  Don't change these without new parse evidence.
+- Never emit en or em dashes from resumate's own code (separators, metadata): use a plain
+  hyphen, comma, or pipe. `check.py` warns about them in user text.

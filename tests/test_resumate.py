@@ -7,7 +7,7 @@ import pytest
 from click.testing import CliRunner
 from pydantic import ValidationError
 
-from resumate.check import pdf_text
+from resumate.check import check_cover_letter, check_resume, pdf_text
 from resumate.cli import main
 from resumate.loader import ResumateError, load_cover_letter, load_resume
 from resumate.markup import blocks, inline
@@ -131,7 +131,7 @@ def test_cover_letter_front_matter_and_comments(tmp_path: Path):
 def test_resume_pdf_is_extractable_and_excludes_comments(workspace: Path, tmp_path: Path):
     resume = load_resume(workspace / "master" / "resume.yaml")
     out = tmp_path / "out" / "resume.pdf"
-    pages = render_resume(resume, out, Style())
+    pages = render_resume(resume, out, Style(layout="classic"))
     text = " ".join(pdf_text(out).split())
     assert pages == 1
     assert "ADA LOVELACE" in text  # classic layout capitalizes the name
@@ -352,9 +352,176 @@ def test_sample_master_is_flagged_until_replaced(workspace: Path, monkeypatch: p
 
 def test_init_from_existing_resume(workspace: Path, tmp_path: Path):
     pdf = tmp_path / "old.pdf"
-    render_resume(load_resume(workspace / "master" / "resume.yaml"), pdf, Style())
+    render_resume(load_resume(workspace / "master" / "resume.yaml"), pdf, Style(layout="classic"))
     target = tmp_path / "career"
     result = CliRunner().invoke(main, ["init", str(target), "--from", str(pdf)])
     assert result.exit_code == 0, result.output
     assert (target / "master" / "source" / "old.pdf").exists()
     assert "ADA LOVELACE" in (target / "master" / "source" / "old.pdf.txt").read_text()
+
+
+# --- ATS / Workday parse safety ---------------------------------------------------------
+
+WORKDAY_YAML = """\
+name: Ada Lovelace
+contact:
+  email: ada@example.com
+  phone: (555) 123-4567
+  location: Ann Arbor, MI
+summary: Engineer who likes compilers.
+sections:
+  - title: Experience
+    entries:
+      - title: Associate Mechanic
+        org: Round1 Bowling and Arcade
+        location: Auburn Hills, MI
+        start: May 2025
+        end: August 2025
+        bullets: [Fixed machines]
+  - title: Education
+    entries:
+      - title: University of Michigan
+        degree: Bachelor of Science in Engineering
+        major: Computer Science
+        location: Ann Arbor, MI
+        dates: May 2026
+"""
+
+
+def _pdftotext(path: Path) -> list[str]:
+    text = subprocess.run(
+        ["pdftotext", str(path), "-"], capture_output=True, text=True, check=True
+    ).stdout
+    return [line.strip() for line in text.splitlines() if line.strip()]
+
+
+def test_defaults_are_the_workday_tested_shape():
+    style = Style()
+    assert (style.layout, style.entry_heading, style.date_align) == ("modern", "stacked", "inline")
+
+
+@pytest.mark.skipif(not shutil.which("pdftotext"), reason="needs poppler's pdftotext")
+@pytest.mark.parametrize("layout", ["classic", "modern"])
+def test_stacked_heading_and_labeled_degree(tmp_path: Path, layout: str):
+    path = tmp_path / "r.yaml"
+    path.write_text(WORKDAY_YAML)
+    out = tmp_path / "r.pdf"
+    render_resume(load_resume(path), out, Style(layout=layout))
+    lines = _pdftotext(out)
+    assert "Associate Mechanic | May 2025 - August 2025" in lines
+    assert "Round1 Bowling and Arcade | Auburn Hills, MI" in lines
+    assert "University of Michigan | May 2026" in lines
+    assert "Bachelor of Science in Engineering | Ann Arbor, MI" in lines
+    assert "Major: Computer Science" in lines
+    # The summary sits under its own heading, before the first section.
+    summary = next(n for n, line in enumerate(lines) if line.lower() == "summary")
+    assert lines[summary + 1] == "Engineer who likes compilers."
+
+
+@pytest.mark.skipif(not shutil.which("pdftotext"), reason="needs poppler's pdftotext")
+def test_one_line_heading_uses_pipes(tmp_path: Path):
+    path = tmp_path / "r.yaml"
+    path.write_text(WORKDAY_YAML)
+    out = tmp_path / "r.pdf"
+    render_resume(load_resume(path), out, Style(layout="classic", entry_heading="one_line"))
+    lines = _pdftotext(out)
+    assert (
+        "Associate Mechanic | Round1 Bowling and Arcade | Auburn Hills, MI | May 2025 - August 2025"
+        in lines
+    )
+    assert "Major: Computer Science" in lines
+
+
+def test_summary_heading_can_be_turned_off(tmp_path: Path):
+    path = tmp_path / "r.yaml"
+    path.write_text(WORKDAY_YAML + 'summary_title: ""\n')
+    out = tmp_path / "r.pdf"
+    render_resume(load_resume(path), out, Style())
+    assert "SUMMARY" not in pdf_text(out)
+    path.write_text(WORKDAY_YAML + "summary_title: Profile\n")
+    render_resume(load_resume(path), out, Style())
+    assert "PROFILE" in pdf_text(out)
+
+
+def test_degree_and_org_are_exclusive():
+    with pytest.raises(ValidationError, match="both org and degree"):
+        Entry(title="U", org="X", degree="BS")
+
+
+@pytest.mark.parametrize("layout", ["classic", "modern"])
+def test_no_en_or_em_dashes_in_rendered_output(workspace: Path, tmp_path: Path, layout: str):
+    from pypdf import PdfReader
+
+    resume = load_resume(workspace / "master" / "resume.yaml")
+    for heading in ("stacked", "one_line"):
+        out = tmp_path / f"{heading}.pdf"
+        render_resume(resume, out, Style(layout=layout, entry_heading=heading))
+        meta = PdfReader(out).metadata
+        everything = pdf_text(out) + str(meta.title) + str(meta.subject)
+        assert "\u2013" not in everything and "\u2014" not in everything
+        assert meta.title == "Ada Lovelace Resume"
+    letter = tmp_path / "c.md"
+    letter.write_text("---\ncompany: Acme\nrole: Engineer\n---\nHello.\n")
+    out = tmp_path / "letter.pdf"
+    render_cover_letter(load_cover_letter(letter), resume, out, Style(layout=layout))
+    assert PdfReader(out).metadata.title == "Ada Lovelace Cover Letter | Engineer | Acme"
+
+
+def test_check_passes_clean_workday_resume(tmp_path: Path):
+    path = tmp_path / "resume.yaml"
+    path.write_text(WORKDAY_YAML)
+    findings, _ = check_resume(path, None)
+    assert findings == []
+
+
+def test_check_warns_about_workday_parse_risks(tmp_path: Path):
+    path = tmp_path / "resume.yaml"
+    path.write_text(
+        "name: Ada Lovelace\n"
+        "contact:\n  phone: +1 (555) 123-4567\n"
+        "summary: May 2026 graduate \u2013 likes compilers.\n"
+        "sections:\n  - title: Experience\n    entries:\n"
+        "      - title: Technician\n        org: Sky Systems (contractor, on-call)\n"
+        "        location: Detroit, MI\n        dates: 2026\n"
+        "      - title: Trainer\n        org: Handshake\n        dates: 2026\n"
+        "      - title: Analyst\n        org: Acme\n        location: Remote\n"
+        "  - title: Education\n    entries:\n"
+        "      - title: B.S.E. Computer Science\n        org: University of Michigan\n"
+        "        location: Ann Arbor, MI\n"
+        "      - title: State University\n        degree: Bachelor of Arts\n"
+        "        location: Lansing, MI\n"
+    )
+    findings, _ = check_resume(path, None)
+    messages = "\n".join(f.message for f in findings)
+    assert all(f.level == "warning" for f in findings), messages
+    assert "comma or parentheses" in messages
+    assert "'Trainer' (Experience) has no location" in messages
+    assert "'Remote' has no City, ST" in messages
+    assert "looks like a degree" in messages
+    assert "has a degree but no `major:`" in messages
+    assert "summary contains a date ('May 2026')" in messages
+    assert "starts with +1" in messages
+    assert "en or em dashes" in messages
+
+
+def test_remote_with_city_and_dash_in_comment_are_fine(tmp_path: Path):
+    path = tmp_path / "resume.yaml"
+    path.write_text(
+        WORKDAY_YAML.replace("Auburn Hills, MI", "Remote, Detroit, MI")
+        + "# a comment \u2014 with an em dash is never rendered\n"
+    )
+    findings, _ = check_resume(path, None)
+    assert findings == []
+
+
+def test_check_warns_about_dashes_in_cover_letter(tmp_path: Path):
+    path = tmp_path / "cover_letter.md"
+    path.write_text("---\ncompany: Acme\n---\nI build things \u2014 fast.\n")
+    assert any("en or em dashes" in f.message for f in check_cover_letter(path, None, None))
+    path.write_text("---\ncompany: Acme\n---\nI build things fast.\n<!-- note \u2014 -->\n")
+    assert not any("dashes" in f.message for f in check_cover_letter(path, None, None))
+
+
+def test_sample_master_has_no_parse_warnings(workspace: Path):
+    findings, _ = check_resume(workspace / "master" / "resume.yaml", workspace)
+    assert [f.message for f in findings if "sample resume" not in f.message] == []

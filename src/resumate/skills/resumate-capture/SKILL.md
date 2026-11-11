@@ -23,10 +23,16 @@ If `master/resume.yaml` starts with `# resumate:example`, the user hasn't set up
    commented out or hidden (keep those commented out with `#`). Preserve their wording;
    fix only obvious typos, each flagged with `# TODO(review): ...` so they can confirm.
    Don't drop details like GPA, coursework, links, or "source available on request" notes.
+   Restructure (without changing facts) so parsers read it correctly, as described under
+   "Parser-safe content" in the `resumate` skill: move parenthetical details out of org
+   names into bullets, give every job a City, ST location, split degrees into `title`
+   (school), `degree`, and `major`, and keep dates out of the summary. Flag anything you
+   had to guess, like a remote job's city, with `# TODO(review): ...`.
 3. **Match their look.** If the source is a PDF, compare it with
    `resumate build master --open` and pick the closer `style.layout` (`classic` or
-   `modern`) in `resumate.yaml`. Set `max_pages` to the source's length if it's longer
-   than one page.
+   `modern`) in `resumate.yaml`. Keep `entry_heading: stacked` even if their old resume
+   put each job on one line; it's the shape Workday parsed correctly. Set `max_pages` to
+   the source's length if it's longer than one page.
 4. Run `resumate check master` until it's clean apart from review notes, then show the
    user the PDF and list anything you flagged.
 5. Delete the example stories in `stories/` and offer to write a few real ones together.

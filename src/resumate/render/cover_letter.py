@@ -24,9 +24,10 @@ def render_cover_letter(letter: CoverLetter, sender: Resume, out: Path, style: S
     style = style.merged(sender.style).merged(letter.style)
     typo = Typography(style)
     out.parent.mkdir(parents=True, exist_ok=True)
-    subject = " – ".join(p for p in ("Cover Letter", letter.role, letter.company) if p)
+    # Plain separators: no en or em dashes anywhere in the output, metadata included.
+    subject = " | ".join(p for p in ("Cover Letter", letter.role, letter.company) if p)
     doc = make_doc(
-        out, style, title=f"{sender.name} – {subject}", author=sender.name, subject=subject
+        out, style, title=f"{sender.name} {subject}", author=sender.name, subject=subject
     )
 
     # A plain letterhead: name, email, and phone, just how to reach the sender. The resume's

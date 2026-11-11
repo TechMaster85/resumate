@@ -37,9 +37,15 @@ class _Model(BaseModel):
 
 
 class Style(_Model):
-    # classic: centered serif header, underlined headings, one line per entry heading.
-    # modern: left-aligned sans header in the accent color, ruled headings, org/location line.
-    layout: Literal["classic", "modern"] = "classic"
+    # modern: left-aligned sans header in the accent color, ruled headings. The default: it is
+    # the layout a real Workday autofill test parsed correctly.
+    # classic: centered serif header, underlined headings, black text.
+    layout: Literal["classic", "modern"] = "modern"
+    # stacked: `Title | dates` on one line, `Org | Location` on the next. Workday's autofill
+    # read title, company, location, and dates correctly from this shape.
+    # one_line: `Title | Org | Location | dates` on a single line, the compact look of a
+    # traditional CS resume. Denser, but not verified against Workday.
+    entry_heading: Literal["stacked", "one_line"] = "stacked"
     # inline: dates follow the title on the same line, so every PDF parser keeps them with
     # their entry. right: flush right, which some parsers detach from the entry.
     date_align: Literal["inline", "right"] = "inline"
@@ -69,10 +75,17 @@ class Contact(_Model):
 
 
 class Entry(_Model):
-    """A job, degree, or project: a title line, an org line, dates, and bullets."""
+    """A job, degree, or project: a title line, an org line, dates, and bullets.
+
+    For a degree, put the school in `title` and use `degree` and `major` instead of `org`,
+    so the degree and field of study render on their own clearly labeled lines.
+    """
 
     title: Text
     org: Text | None = None
+    degree: Text | None = None  # e.g. Bachelor of Science in Engineering; replaces `org`
+    major: Text | None = None  # field of study, rendered as `Major: ...`
+    minor: Text | None = None
     location: Text | None = None
     start: Text | None = None
     end: Text | None = None
@@ -80,6 +93,20 @@ class Entry(_Model):
     url: Text | None = None  # shown after the title, e.g. a project's repo
     summary: Text | None = None
     bullets: list[Text] = []
+
+    @model_validator(mode="after")
+    def _degree_or_org(self) -> Entry:
+        if self.degree and self.org:
+            raise ValueError(
+                f"entry {self.title!r} has both org and degree; for a degree, put the school "
+                "in title and the degree in degree"
+            )
+        return self
+
+    @property
+    def org_text(self) -> str | None:
+        """What goes on the org line: the employer, or for a degree, the degree name."""
+        return self.org or self.degree
 
     @property
     def date_range(self) -> str:
@@ -157,6 +184,9 @@ class Resume(_Model):
     headline: Text | None = None
     contact: Contact = Contact()
     summary: Text | None = None
+    # Heading printed above the summary. A paragraph with no heading was read as a job by
+    # Workday's autofill; set to "" to print the summary without a heading anyway.
+    summary_title: Text = "Summary"
     sections: list[Section] = []
     style: dict | None = None  # per-resume overrides of workspace Style
 

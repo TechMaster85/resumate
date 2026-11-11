@@ -78,32 +78,45 @@ def _inline_row(left: str, right: str, right_style: ParagraphStyle, italic: bool
     return Paragraph(left, right_style.parent)
 
 
+def _degree_lines(entry: Entry, typo: Typography) -> list[Flowable]:
+    # Labeled lines so a parser can't mistake part of the degree name for the major.
+    # (Workday read "Bachelor of Science in Engineering in Computer Science" as Engineering
+    # Physics.)
+    labeled = [("Major", entry.major), ("Minor", entry.minor)]
+    return [Paragraph(f"{label}: {inline(value)}", typo.body) for label, value in labeled if value]
+
+
 def _entry_heading(entry: Entry, typo: Typography) -> list[Flowable]:
     url = _url(entry, typo)
     inline_dates = typo.style.date_align == "inline"
-    if typo.classic:
-        # One line: **Title – Org, Location** – url, with the date in italics on the right
-        # (or after a `|` when inline).
-        org = ", ".join(p for p in (entry.org, entry.location) if p)
-        title = " – ".join(inline(p) for p in (entry.title, org) if p)
-        left = f"<b>{title}</b>" + (f" – {url}" if url else "")
-        if inline_dates:
-            return [_inline_row(left, entry.date_range, typo.right_italic, italic=True)]
-        return [_row(left, entry.date_range, typo.right_italic)]
+    org_text = entry.org_text
+    date_style = typo.right_italic if typo.classic else typo.right
 
+    if typo.style.entry_heading == "one_line":
+        # **Title** | Org | Location  url | dates. Pipes, never dashes, between the parts.
+        parts = [f"<b>{inline(entry.title)}</b>"]
+        parts += [inline(p) for p in (org_text, entry.location) if p]
+        left = " | ".join(parts) + (f"  {url}" if url else "")
+        if inline_dates:
+            head = [_inline_row(left, entry.date_range, date_style, italic=typo.classic)]
+        else:
+            head = [_row(left, entry.date_range, date_style)]
+        return head + _degree_lines(entry, typo)
+
+    # Stacked: `Title | dates`, then `Org | Location`. This is the shape Workday's resume
+    # autofill parsed correctly (title, company, location, and dates).
     left = f"<b>{inline(entry.title)}</b>" + (f"  {url}" if url else "")
     if inline_dates:
-        head: list[Flowable] = [_inline_row(left, entry.date_range, typo.right, italic=False)]
-        if entry.org or entry.location:
-            org = f"<i>{inline(entry.org)}</i>" if entry.org else ""
+        head: list[Flowable] = [_inline_row(left, entry.date_range, date_style, typo.classic)]
+    else:
+        head = [_row(left, entry.date_range, date_style)]
+    if org_text or entry.location:
+        org = f"<i>{inline(org_text)}</i>" if org_text else ""
+        if inline_dates:
             head.append(_inline_row(org, entry.location or "", typo.right_italic, italic=True))
-        return head
-
-    head = [_row(left, entry.date_range, typo.right)]
-    if entry.org or entry.location:
-        org = f"<i>{inline(entry.org or '')}</i>"
-        head.append(_row(org, entry.location or "", typo.right_italic))
-    return head
+        else:
+            head.append(_row(org, entry.location or "", typo.right_italic))
+    return head + _degree_lines(entry, typo)
 
 
 def _certificate_detail(cert: Certificate, typo: Typography) -> str:
@@ -115,7 +128,7 @@ def _certificate_detail(cert: Certificate, typo: Typography) -> str:
         parts.append(f"Credential ID {inline(cert.credential_id)}")
     if link := _link(cert.url or "", typo):
         parts.append(link)
-    return " – ".join(parts)
+    return " | ".join(parts)
 
 
 def _certificate(cert: Certificate, typo: Typography) -> list[Flowable]:
@@ -188,17 +201,19 @@ def render_resume(resume: Resume, out: Path, style: Style) -> int:
     doc = make_doc(
         out,
         style,
-        title=f"{resume.name} – Resume",
+        title=f"{resume.name} Resume",
         author=resume.name,
         subject=resume.headline or "Resume",
     )
 
     flow = header(resume.name, resume.headline, resume.contact, typo)
     if resume.summary:
-        flow += [
-            Spacer(1, style.base_size * 0.6),
-            Paragraph(inline(resume.summary, typo.link_color), typo.body),
-        ]
+        # A real heading: without one, Workday's autofill read the summary as a job entry.
+        if resume.summary_title:
+            flow += _section_heading(Section(title=resume.summary_title), typo)
+        else:
+            flow.append(Spacer(1, style.base_size * 0.6))
+        flow.append(Paragraph(inline(resume.summary, typo.link_color), typo.body))
     for section in resume.sections:
         if section.is_empty:
             continue

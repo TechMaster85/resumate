@@ -37,14 +37,15 @@ contact:
   links:
     - label: github.com/user    # shown text; keep it readable, ATS reads the label
       url: https://github.com/user
-summary: >                      # optional paragraph under the header
-  ...
+summary: >                      # optional paragraph, printed under a "Summary" heading
+  ...                           # no dates in it (Workday read a dated summary as a job)
+summary_title: Summary          # optional; the summary's heading ("" for none, not advised)
 sections:                       # rendered in this order
   - title: Experience
     entries:                    # jobs, degrees, projects
       - title: Senior Engineer
-        org: Company
-        location: Remote
+        org: Company            # plain name: no commas or parentheses
+        location: Detroit, MI   # City, ST on every job; see "Parser-safe content" for remote
         start: Mar 2022         # free text
         end: Present            # or use `dates: 2018 - 2022` instead of start/end
         url: https://github.com/user/repo   # optional, shown after the title
@@ -52,6 +53,14 @@ sections:                       # rendered in this order
         bullets:
           - Did X, achieving **Y**
           # - Commented-out bullet: excluded from the PDF, kept for reference
+  - title: Education
+    entries:
+      - title: University of Michigan          # the school
+        degree: Bachelor of Science in Engineering   # instead of org
+        major: Computer Science                 # printed as `Major: Computer Science`
+        minor: Mathematics                      # optional
+        location: Ann Arbor, MI
+        dates: May 2026
   - title: Skills
     skills:
       - category: Languages
@@ -72,20 +81,45 @@ style:                          # optional per-file overrides of resumate.yaml s
   max_pages: 2
 ```
 
-Layouts (`style.layout`): **classic** (default) is a centered serif header, bold
-underlined section headings, one bold line per entry (`Title – Org, Location – url`)
-followed by the date in italics, and skills as bullets. **modern** is a left-aligned sans
-header in the accent color, ruled headings, and a second italic line for org/location.
+Layouts (`style.layout`): **modern** (default) is a left-aligned sans header in the
+accent color and ruled section headings. **classic** is a centered serif header with the
+name in capitals, bold underlined section headings, all-black text, and skills as bullets.
+
+Entry headings (`style.entry_heading`): **stacked** (default) prints `Title | dates` on
+one line and `Org | Location` on the next. That is the shape a real Workday resume
+autofill parsed correctly (title, company, location, dates, bullets). **one_line** prints
+`Title | Org | Location | dates` on one line; it is more compact but untested against
+Workday. Both layouts support both headings. For a degree, the org line holds `degree`
+and a labeled `Major: ...` line follows.
 Dates follow the heading after a `|` (`style.date_align: inline`, the default) so every
 PDF parser keeps them with their entry; `date_align: right` puts them flush right, which
 looks traditional but some ATS parsers detach right-aligned dates from the entry. Date
 ranges are written with a plain hyphen (`Mar 2022 - Present`); en and em dashes in
-`dates`, `issued`, and `expires` are converted, since some older parsers misread them.
+`dates`, `issued`, and `expires` are converted. Resumate's own separators are pipes,
+never en or em dashes, in the text and in the PDF metadata.
 A certificate keeps the date on the name's line. The issuer, credential id, and url
-follow on the next line, in italics. With `expires` set, the date reads
-`Jun 2024 (expires Jun 2027)`.
-In classic, `title` can hold the whole heading (e.g. `University of Michigan, Ann Arbor, MI
-– B.S.E. Computer Science`) when a source resume orders it differently.
+follow on the next line, in italics, separated by `|`. With `expires` set, the date
+reads `Jun 2024 (expires Jun 2027)`.
+
+## Parser-safe content
+
+Workday's resume autofill was tested against resumate PDFs. These habits came out of
+those tests, and `resumate check` warns about each one:
+
+- **Org names are plain.** `Sky Systems`, not `Sky Systems (Microsoft contractor,
+  on-call)`. A comma or parentheses split one job into two. Put the detail in a bullet.
+- **Every job has a `location: City, ST`.** Without one, Workday split the entry and lost
+  the company.
+- **Remote work:** a bare `location: Remote` made Workday drop the company and bullets.
+  Use the City, ST the person worked from (or the employer's city) and say it was remote
+  in a bullet. This workaround is a best guess and hasn't been re-tested in Workday.
+- **No dates in the summary.** `May 2026 Computer Science graduate ...` became a fake job.
+  Keep dates in Experience and Education. The summary always gets a heading.
+- **Degrees use `degree` and `major`.** "Bachelor of Science in Engineering in Computer
+  Science" was read as the field "Engineering Physics". School in `title`, degree name in
+  `degree`, field in `major`.
+- **Phone without +1**: `(586) 555-0100`. Workday's phone field rejected `+1 (586) ...`.
+- **No en or em dashes** in any text. Use a hyphen, comma, colon, or pipe.
 
 Rules:
 - Each section has one of `entries`, `skills`, `certificates`, `bullets`, `text`. A section
@@ -148,7 +182,7 @@ flag things the user must confirm as `# TODO(review): ...` (YAML) or
 | `resumate new COMPANY ROLE [--url URL]` | Create an application folder; prints its path |
 | `resumate list` | Applications with status |
 | `resumate build [TARGET] [--open] [-o DIR]` | Compile an application folder, `master/`, or one `.yaml`/`.md` file to `out/` |
-| `resumate check [TARGET]` | Validate, test an application's page count and text extraction, list review markers; exit 1 on errors. The master resume is not held to the page limit. |
+| `resumate check [TARGET]` | Validate, test an application's page count and text extraction, warn about ATS parse risks (see "Parser-safe content"), list review markers; exit 1 on errors. The master resume is not held to the page limit. |
 | `resumate diff [APP]` | Unified diff of an application's resume vs. master |
 | `resumate text FILE.pdf` | Print the text an ATS would extract |
 | `resumate status APP STATUS` | drafting, ready, applied, interviewing, offer, rejected, withdrawn |

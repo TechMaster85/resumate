@@ -53,7 +53,7 @@ The agent follows the bundled `resumate-apply` skill and leaves everything in
 `applications/2026-10-22-acme-staff-engineer/`. Review it:
 
 ```bash
-resumate check acme          # page limits, text extraction, open TODO(review) notes
+resumate check acme          # page limits, text extraction, ATS parse risks, TODO(review) notes
 resumate diff acme           # how the tailored resume differs from master
 resumate build acme --open   # compile resume + cover letter PDFs to out/
 resumate status acme applied
@@ -96,11 +96,19 @@ sections:
     entries:
       - title: Senior Software Engineer
         org: Company
+        location: Detroit, MI
         start: Mar 2022
         end: Present
         bullets:
           - Cut event latency from **15 min to 4 s** for 2M daily shipments
           # - A bullet that doesn't fit this job
+  - title: Education
+    entries:
+      - title: University of Michigan
+        degree: Bachelor of Science in Engineering
+        major: Computer Science
+        location: Ann Arbor, MI
+        dates: May 2018
   - title: Skills
     skills:
       - { category: Languages, items: "Python, Go, SQL" }
@@ -129,16 +137,35 @@ extracts. Style (font, accent color, size, margins, page size, page limit) is se
 
 Two layouts:
 
-- **classic** (default): centered serif header with your name in capitals, bold
-  underlined section headings, one bold line per entry with the date in italics after
-  it. The traditional CS resume format.
-- **modern**: left-aligned sans-serif header in an accent color, ruled section headings,
-  and a separate italic line for organization and location.
+- **modern** (default): left-aligned sans-serif header in an accent color and ruled
+  section headings.
+- **classic**: centered serif header with your name in capitals, bold underlined
+  section headings, all black. The traditional CS resume look.
+
+Either way, each entry is printed **stacked** by default: `Title | dates` on one line
+and `Org | Location` on the next. Set `entry_heading: one_line` for the compact
+`Title | Org | Location | dates` form. The summary gets a `Summary` heading, and degrees
+print the school, the degree, and a labeled `Major:` line.
 
 Dates go on the same line as the entry heading (`Senior Engineer | Mar 2022 - Present`),
 because some ATS parsers detach flush-right dates from their entry and lose your
 timeline. Set `date_align: right` in `style:` for the traditional flush-right look.
-Date ranges use plain hyphens, which older parsers read more reliably than en dashes.
+Date ranges use plain hyphens, and resumate never adds en or em dashes of its own.
+
+### Parsing in Workday and other ATS
+
+The defaults come from real tests of Workday's "autofill with resume". The stacked
+heading, a plain company name, and a `City, ST` location parsed perfectly. These broke
+it, and `resumate check` warns about each:
+
+| Problem seen in Workday | Do this instead |
+|---|---|
+| Commas or parentheses in a company name split the job in two | Plain name; details go in a bullet |
+| A job with no location lost its company | `location: City, ST` on every job |
+| `location: Remote` dropped the company and bullets | The City, ST you worked from, "remote" in a bullet (untested workaround) |
+| A summary with a date and no heading became a fake job | Summary heading (automatic) and no dates in the summary |
+| The degree's field of study was misread | `degree:` and `major:` fields |
+| `+1 (586) ...` was rejected by the phone field | `(586) 555-0100` |
 
 ## Agent skills
 

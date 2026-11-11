@@ -85,7 +85,12 @@ warehouse and is allowed to run long. This copy is what has to fit on the page:
 - **Reframe**: reword bullets to foreground what this role cares about, and mirror the
   posting's terminology where it's *accurate* (ATS keyword matching is literal: if they
   say "Kubernetes" and the user did Kubernetes work, say "Kubernetes").
-- **Headline and summary**: adjust to speak to this role.
+- **Headline and summary**: adjust to speak to this role. Keep dates (graduation month,
+  years) out of the summary: Workday's autofill read a dated summary as a job.
+- **Parser-safe structure**: follow "Parser-safe content" in the `resumate` skill. Plain
+  org names (details go in bullets), a City, ST location on every job, `degree` and
+  `major` for education, phone without +1, and no en or em dashes anywhere, in the
+  resume or the letter. Fix every parse warning `resumate check` prints before handing off.
 - **Never** add an accomplishment, metric, tool, or title that isn't in the master, the
   stories, or the conversation. If a reframe stretches the original, or you think a
   real metric exists but you don't know it, leave `# TODO(review): ...`.

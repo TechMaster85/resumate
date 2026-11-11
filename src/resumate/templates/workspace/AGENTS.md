@@ -48,9 +48,9 @@ goes anywhere.
 Load the matching skill before acting. They're [Agent Skills](https://agentskills.io) in
 `.agents/skills/` (mirrored in `.claude/skills/` for Claude Code):
 
-- **resumate** — file formats and CLI reference. Read before editing any resumate file.
-- **resumate-apply** — tailor a resume and cover letter for a specific job.
-- **resumate-capture** — add accomplishments and stories to the master materials.
+- **resumate**: file formats and CLI reference. Read before editing any resumate file.
+- **resumate-apply**: tailor a resume and cover letter for a specific job.
+- **resumate-capture**: add accomplishments and stories to the master materials.
 
 If your agent doesn't load skills automatically, read `.agents/skills/<name>/SKILL.md`
 directly and follow it.
@@ -67,7 +67,11 @@ directly and follow it.
    `resumate diff` shows the user exactly what changed.
 4. **Sound like the user.** Borrow phrasing from their stories and from what they said
    about why they want the job. Avoid generic AI cover-letter language.
-5. **Candor is input, not copy.** The user can tell you anything, including what they
+5. **Write for the parser, then the person.** Follow "Parser-safe content" in the
+   `resumate` skill (plain org names, City, ST locations, no dates in the summary,
+   `degree`/`major` for education, no en or em dashes) and clear the parse warnings
+   from `resumate check`.
+6. **Candor is input, not copy.** The user can tell you anything, including what they
    don't know or don't enjoy. Use it to decide what gets past the filter. What the
    employer reads must be true, and it should be the part that earns the interview:
    keep what helps, reframe what has a strength inside it, and leave the rest for
