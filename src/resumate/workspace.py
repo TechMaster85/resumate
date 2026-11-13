@@ -9,11 +9,13 @@ my-career/
   stories/*.md           work anecdotes for cover letters and interviews
   supporting/            portfolio pieces, writing samples, transcripts, ...
   applications/<date>-<company>-<role>/
-    job.md               why you're interested + the job description
+    job.md               why you're interested + screening questions + the job description
     research.md          the agent's notes on the company and role
     resume.yaml          tailored resume
     cover_letter.md      tailored cover letter
+    answers.md           drafted answers for the application form's questions
     materials.md         which supporting materials to include, and why
+    interview-prep.md    prep guide, written by an agent once there's an interview
     out/                 compiled PDFs
 """
 

@@ -274,9 +274,10 @@ def check(target: str) -> None:
             except ResumateError:
                 pass
         findings += check_cover_letter(letter_path, sender, root)
-    materials = path / "materials.md" if path.is_dir() else None
-    if materials and materials.exists():
-        findings += review_markers(materials)
+    if path.is_dir():
+        for notes in ("materials.md", "answers.md"):
+            if (path / notes).exists():
+                findings += review_markers(path / notes)
 
     for f in findings:
         click.secho(f"{f.level:>7}  {f.file}: {f.message}", fg=_COLORS[f.level])

@@ -1,9 +1,11 @@
 import datetime as dt
 import shutil
 import subprocess
+from importlib import resources
 from pathlib import Path
 
 import pytest
+import yaml
 from click.testing import CliRunner
 from pydantic import ValidationError
 
@@ -244,15 +246,59 @@ def test_cover_letter_without_recipient_has_no_inside_address(workspace: Path, t
 # --- workspace -------------------------------------------------------------------------
 
 
+SKILLS = {
+    "resumate",
+    "resumate-apply",
+    "resumate-capture",
+    "resumate-cover-letter",
+    "resumate-interview-prep",
+    "resumate-questions",
+    "resumate-research",
+    "resumate-review",
+    "resumate-setup",
+    "resumate-tailor",
+    "resumate-voice",
+}
+
+
 def test_init_installs_skills_and_examples(workspace: Path):
     assert (workspace / "resumate.yaml").exists()
     for skill_dir in (".agents/skills", ".claude/skills"):
-        assert (workspace / skill_dir / "resumate-apply/SKILL.md").exists()
+        installed = {p.parent.name for p in (workspace / skill_dir).glob("*/SKILL.md")}
+        assert installed == SKILLS
     for pointer in ("CLAUDE.md", "GEMINI.md"):
         assert (workspace / pointer).read_text().strip() == "@AGENTS.md"
     assert "Ada Lovelace" in (workspace / "master/resume.yaml").read_text()
     with pytest.raises(ResumateError, match="already"):
         init_workspace(workspace)
+
+
+def test_bundled_skills_are_well_formed():
+    skills = resources.files("resumate") / "skills"
+    found = set()
+    for folder in skills.iterdir():
+        text = (folder / "SKILL.md").read_text(encoding="utf-8")
+        meta = yaml.safe_load(text.split("---")[1])
+        assert meta["name"] == folder.name
+        assert 50 < len(meta["description"]) <= 1024
+        assert "\u2013" not in text and "\u2014" not in text, folder.name  # house style
+        found.add(folder.name)
+    assert found == SKILLS
+    reference = (skills / "resumate" / "SKILL.md").read_text(encoding="utf-8")
+    for name in SKILLS - {"resumate"}:
+        assert f"`{name}`" in reference  # the reference lists every skill
+
+
+def test_install_skills_refreshes_without_removing(workspace: Path, monkeypatch):
+    monkeypatch.chdir(workspace)
+    extra = workspace / ".agents/skills/my-own-skill/SKILL.md"
+    extra.parent.mkdir(parents=True)
+    extra.write_text("mine")
+    (workspace / ".claude/skills/resumate-apply/SKILL.md").write_text("stale")
+    result = CliRunner().invoke(main, ["install-skills"])
+    assert result.exit_code == 0, result.output
+    assert extra.read_text() == "mine"
+    assert "stale" not in (workspace / ".claude/skills/resumate-apply/SKILL.md").read_text()
 
 
 def test_application_lifecycle(workspace: Path):
@@ -294,6 +340,12 @@ def test_cli_end_to_end(workspace: Path, monkeypatch: pytest.MonkeyPatch):
     result = runner.invoke(main, ["check", "acme"])
     assert result.exit_code == 0, result.output
     assert "TODO(review): confirm count" in result.output
+
+    assert "TODO" not in result.output.replace("TODO(review): confirm count", "")
+    answers = app / "answers.md"
+    answers.write_text(answers.read_text() + "<!-- TODO(review): sponsorship? -->\n")
+    result = runner.invoke(main, ["check", "acme"])
+    assert "answers.md" in result.output and "sponsorship?" in result.output
 
     result = runner.invoke(main, ["build", "acme"])
     assert result.exit_code == 0, result.output

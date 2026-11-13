@@ -1,6 +1,6 @@
 ---
 name: resumate
-description: Reference for operating resumate, the plain-text resume and cover letter toolkit. Covers the workspace layout, the resume.yaml and cover_letter.md formats, and every CLI command (init, new, build, check, diff, list, status, attach, text). Use whenever reading, editing, building, or checking files in a resumate workspace (a folder containing resumate.yaml).
+description: Reference for operating resumate, the plain-text resume and cover letter toolkit. Covers the workspace layout, the resume.yaml and cover_letter.md formats, parser-safe content rules, review markers, fitting on the page, and every CLI command (init, import, new, build, check, diff, list, status, attach, text, install-skills). Use whenever reading, editing, building, or checking files in a resumate workspace (a folder containing resumate.yaml). It describes formats and commands, not procedures; for a task, load the matching skill (resumate-apply for a job posting, resumate-setup for a first import, resumate-capture to grow the master).
 ---
 
 # resumate reference
@@ -8,6 +8,27 @@ description: Reference for operating resumate, the plain-text resume and cover l
 resumate keeps a person's career materials as plain text and compiles them into clean,
 single-column, ATS-friendly PDFs. The workspace root is the nearest folder containing
 `resumate.yaml`. Run CLI commands from anywhere inside it.
+
+## Skills
+
+Each skill does one job. Load the one that matches the task:
+
+| Skill | Use it to |
+|---|---|
+| `resumate` | Look up formats, commands, and parser-safe rules (this file) |
+| `resumate-setup` | Import an existing resume into the master the first time |
+| `resumate-capture` | Add accomplishments, stories, and supporting-file notes to the master |
+| `resumate-apply` | Run one application from posting to handoff (calls the next five) |
+| `resumate-research` | Research the company and role into `research.md` |
+| `resumate-tailor` | Tailor the application's `resume.yaml` |
+| `resumate-cover-letter` | Write `cover_letter.md` |
+| `resumate-questions` | Draft screening and free-text answers in `answers.md` |
+| `resumate-review` | Check an application before the user submits it |
+| `resumate-voice` | Writing rules for anything the employer reads |
+| `resumate-interview-prep` | Write `interview-prep.md` once the user has an interview |
+
+resumate starts once the user has a job posting; finding openings is out of scope. The
+user always submits applications and sets `status` themselves.
 
 ## Workspace layout
 
@@ -17,13 +38,20 @@ master/resume.yaml            master resume: source of truth for all facts
 stories/*.md                  work anecdotes (front matter: title, when, where, tags)
 supporting/                   portfolio files; optional `<file>.md` sidecar notes
 applications/<date>-<company>-<role>/
-  job.md                      front matter (company, role, url, status) + why interested + JD
+  job.md                      front matter (company, role, url, status, posted) + why
+                              interested + screening questions + JD
   research.md                 agent research notes, with sources
   resume.yaml                 tailored resume (starts as a copy of master)
   cover_letter.md             tailored cover letter
+  answers.md                  drafted answers for the application form's questions
   materials.md                supporting-material recommendations
+  interview-prep.md           prep guide, written once the user gets an interview
   out/                        compiled PDFs and attached materials
 ```
+
+`job.md`, `research.md`, and `interview-prep.md` are private notes for the user. The
+resume, the letter, and `answers.md` are what the employer reads. `answers.md` and
+`interview-prep.md` are plain Markdown; resumate doesn't build them into PDFs.
 
 ## resume.yaml format
 
@@ -103,8 +131,9 @@ reads `Jun 2024 (expires Jun 2027)`.
 
 ## Parser-safe content
 
-Workday's resume autofill was tested against resumate PDFs. These habits came out of
-those tests, and `resumate check` warns about each one:
+This section is the one place these rules live; other skills point here. Workday's
+resume autofill was tested against resumate PDFs. These habits came out of those tests,
+and `resumate check` warns about each one. Fix every parse warning before handing off.
 
 - **Org names are plain.** `Sky Systems`, not `Sky Systems (Microsoft contractor,
   on-call)`. A comma or parentheses split one job into two. Put the detail in a bullet.
@@ -165,13 +194,16 @@ Full Name
 
 `resumate init` creates a sample master resume whose first line is `# resumate:example`.
 `check` and `new` warn while it's there. Replace the content with the user's real resume
-(see `resumate-capture`) and delete the marker line.
+(see `resumate-setup`) and delete the marker line. Never tailor from the sample.
 
 ## Review markers
 
 Any line containing `TODO`, `FIXME`, or `REVIEW` is reported by `resumate check`. Agents
 flag things the user must confirm as `# TODO(review): ...` (YAML) or
 `<!-- TODO(review): ... -->` (Markdown). The user deletes the marker once resolved.
+`check` on an application scans `resume.yaml`, `cover_letter.md`, `materials.md`, and
+`answers.md`. Flag, don't guess: anything you aren't sure the user would confirm gets a
+marker rather than a plausible guess.
 
 ## CLI
 

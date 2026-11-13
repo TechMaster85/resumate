@@ -14,7 +14,7 @@ goes anywhere.
 
 2. **Master resume.** Encourage them to provide an existing resume (PDF, Word, Markdown,
    or pasted text) and as much other detail as they will give. Rewrite it as
-   `master/resume.yaml` with the `resumate-capture` skill. Check `master/source/` first.
+   `master/resume.yaml` with the `resumate-setup` skill. Check `master/source/` first.
    If `master/resume.yaml` still starts with `# resumate:example`, it is sample content:
    do not tailor from it.
 
@@ -27,11 +27,16 @@ goes anywhere.
 
 4. **A job description.** Ask why the job appeals to them, in their words. Ask the story
    prompts from `resumate-capture` so anything new gets saved before you draft. Then
-   follow `resumate-apply`: tailor that application's `resume.yaml` from the master so
-   the filter sees the real match, and write `cover_letter.md` in their voice so a
-   person wants to interview them. Not a generated letter. Both files are plain text they can edit with or without you. `resumate build`
-   writes the PDFs into that application's `out/` folder. The posting, the sources, and
-   the PDFs all live in that one application folder.
+   follow `resumate-apply`, which runs research, tailoring, the cover letter, the
+   application-form answers, and a final review: the filter sees the real match in
+   `resume.yaml`, and a person reads a `cover_letter.md` and `answers.md` in their
+   voice. Not a generated letter. All of it is plain text they can edit with or without
+   you. `resumate build` writes the PDFs into that application's `out/` folder. The
+   posting, the sources, and the PDFs all live in that one application folder. A few
+   strong applications beat many weak ones: never mass-apply.
+
+5. **An interview.** When an application's status is `interviewing`, follow
+   `resumate-interview-prep` to write `interview-prep.md`.
 
 ## Layout
 
@@ -40,7 +45,7 @@ goes anywhere.
 | `master/resume.yaml` | Everything the user has done. Source of truth for facts. |
 | `stories/*.md` | Work anecdotes in the user's voice, for cover letters. |
 | `supporting/` | Portfolio pieces, writing samples, etc., with optional `<file>.md` notes. |
-| `applications/<date>-<company>-<role>/` | One folder per job: `job.md`, `research.md`, `resume.yaml`, `cover_letter.md`, `materials.md`, `out/`. |
+| `applications/<date>-<company>-<role>/` | One folder per job: `job.md`, `research.md`, `resume.yaml`, `cover_letter.md`, `answers.md`, `materials.md`, `interview-prep.md` (once interviewing), `out/`. |
 | `resumate.yaml` | Style and page-limit settings. |
 
 ## Skills
@@ -48,9 +53,17 @@ goes anywhere.
 Load the matching skill before acting. They're [Agent Skills](https://agentskills.io) in
 `.agents/skills/` (mirrored in `.claude/skills/` for Claude Code):
 
-- **resumate**: file formats and CLI reference. Read before editing any resumate file.
-- **resumate-apply**: tailor a resume and cover letter for a specific job.
-- **resumate-capture**: add accomplishments and stories to the master materials.
+- **resumate**: file formats, CLI, and parser-safe rules. Read before editing any resumate file.
+- **resumate-setup**: first import of an existing resume into `master/resume.yaml`.
+- **resumate-capture**: add accomplishments, stories, and supporting-file notes to the master.
+- **resumate-apply**: run one application from posting to handoff. It calls:
+  - **resumate-research**: company and role research into `research.md`.
+  - **resumate-tailor**: tailor the application's `resume.yaml`.
+  - **resumate-cover-letter**: write `cover_letter.md`.
+  - **resumate-questions**: draft screening and free-text answers in `answers.md`.
+  - **resumate-review**: final check before the user submits.
+- **resumate-voice**: writing rules for anything the employer reads.
+- **resumate-interview-prep**: prep guide once the user has an interview.
 
 If your agent doesn't load skills automatically, read `.agents/skills/<name>/SKILL.md`
 directly and follow it.
@@ -66,7 +79,8 @@ directly and follow it.
 3. **Keep it reviewable.** Prefer commenting out master content over deleting it, so
    `resumate diff` shows the user exactly what changed.
 4. **Sound like the user.** Borrow phrasing from their stories and from what they said
-   about why they want the job. Avoid generic AI cover-letter language.
+   about why they want the job. Avoid generic AI cover-letter language (see
+   `resumate-voice`).
 5. **Write for the parser, then the person.** Follow "Parser-safe content" in the
    `resumate` skill (plain org names, City, ST locations, no dates in the summary,
    `degree`/`major` for education, no en or em dashes) and clear the parse warnings
@@ -76,3 +90,5 @@ directly and follow it.
    employer reads must be true, and it should be the part that earns the interview:
    keep what helps, reframe what has a strength inside it, and leave the rest for
    interview prep in `research.md`.
+7. **The user submits.** Never submit an application, fill in a form, or contact anyone
+   for the user. They set `status` themselves.

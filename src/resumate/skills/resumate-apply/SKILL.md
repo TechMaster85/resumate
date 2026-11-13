@@ -1,15 +1,20 @@
 ---
 name: resumate-apply
-description: Tailor a resume and cover letter for a specific job using resumate. Use when the user shares a job description or posting link, says why they're interested in a role, or asks for help applying to a job. Researches the company, tailors resume.yaml from the master resume, drafts a cover letter from the user's stories, recommends supporting materials, builds PDFs, and hands everything back for review.
+description: Coordinate one job application in resumate from posting to handoff. Use when the user shares a job description or posting link, says why they're interested in a role, or asks for help applying to a job. Handles intake (posting, the user's reasons, screening questions), then runs resumate-research, resumate-tailor, resumate-cover-letter, resumate-questions, and resumate-review in order, recommends supporting materials, builds the PDFs, and hands everything back. Use a sibling skill directly when the user wants only one piece redone (for example just the letter). Not for finding job openings; resumate starts once the user has a posting.
 ---
 
-# Tailor an application
+# Coordinate an application
 
 Goal: get past the resume filter honestly, so a person sets up an interview. Make the
-real match visible in the posting's own words, and make the letter sound like the user.
-You prepare drafts; **the user reviews, edits, and submits.**
+real match visible in the posting's own words, and make everything the employer reads
+sound like the user. You prepare drafts; **the user reviews, edits, and submits.** You
+never submit an application, and you never change `status` past `drafting`.
 
-Everything you write for the employer serves that goal.
+**Quality over volume.** A few strong, tailored applications beat many weak ones. Never
+mass-apply, never pad a week with weak-fit roles to "get more out," and never offer to
+fill in or submit forms in bulk. The user sets their own weekly number; help them make
+each one count. When a company's own career site and a one-click board both carry the
+posting, suggest the company site.
 
 **Candor is input, not copy.** Encourage the user to be blunt with you: what they don't
 know, what they'd rather not do, what they like more than what the job asks for. You need
@@ -26,157 +31,76 @@ the user says, decide whether it helps this employer say yes:
   doubt, an unflattering comparison). Note it in `research.md` for interview prep instead.
 
 Never misstate hard eligibility facts (degree status, dates, work authorization), and
-never imply something false by omission that a background check would contradict.
-Read the `resumate` skill first if you haven't, for file formats and commands.
+never imply something false by omission that a background check would contradict. Never
+invent facts: every claim traces to `master/resume.yaml`, `stories/`, or this
+conversation. Read the `resumate` skill first if you haven't, for file formats, commands,
+and "Parser-safe content".
 
 ## 0. Make sure the master resume is real
 
 If `master/resume.yaml` still has the `# resumate:example` marker, stop: tailoring the
-sample would be meaningless. Ask the user for their current resume and run the
-`resumate-capture` first-time setup, then come back here.
+sample would be meaningless. Ask for the user's current resume and run `resumate-setup`,
+then come back here.
 
 ## 1. Intake
 
-You need two things from the user. Ask for whatever is missing, and don't proceed
-without the first:
+You need two things from the user:
 
+- **The job description** (pasted text, or a link you can fetch). Don't proceed without it.
 - **Why they're interested**, in their words. If it's thin ("seems cool"), ask one
   follow-up: what specifically about the company, product, team, or problem? Tell them
   they can be completely honest here: `job.md` is their private notes, and you'll decide
   what reaches the employer.
-- **The job description** (pasted text, or a link you can fetch).
 
-Then create the folder and record both verbatim:
+The resume can be drafted before the reasons arrive. **The cover letter and the "Why
+this company?" answers wait for the user's why in their own words.** Don't invent a
+polished substitute from old answers. If you must hand off before they answer, leave
+the letter as a marked draft with `<!-- TODO(review): waiting on your reason for this
+role -->` at the top.
+
+Then create the folder and record everything:
 
 ```bash
 resumate new "Company" "Role Title" --url "https://..."
 ```
 
-Fill in `job.md`: their reasons under *Why I'm interested* (their words, lightly
-cleaned up at most), the full posting under *Job description*.
+Fill in `job.md`:
 
-## 2. Research
+- `posted:` in the front matter: the posting date if the page shows one, else the date
+  the user first saw it, else leave it blank. Freshness matters: many recruiters review
+  in arrival order and stop once they have a strong shortlist.
+- *Why I'm interested*: their reasons, their words, lightly cleaned up at most.
+- *Screening questions*: the knockout questions the posting or application form asks or
+  is likely to ask (work authorization, sponsorship, location or relocation, degree,
+  clearance, start date, salary), copied as worded when you can see them. These are
+  the main automatic rejection path, so they get answered in `resumate-questions`.
+- *Job description*: the full posting.
 
-Read everything in the workspace first: `master/resume.yaml`, every file in `stories/`,
-and `supporting/` (including sidecar `.md` notes). Then research the company and role
-using whatever web tools you have:
+## 2. Run the steps in order
 
-- What the company does, for whom, its stage, and recent news (launches, funding, layoffs)
-- Engineering blog posts, talks, or open source from this team; the product itself
-- The values and language the company uses about itself
+1. **`resumate-research`** writes `research.md`: the company, the ranked requirements,
+   fit and honest gaps, the employer's AI and identity-verification policy, possible
+   referrals, and posting freshness.
+2. **`resumate-tailor`** edits the application's `resume.yaml`.
+3. **`resumate-cover-letter`** writes `cover_letter.md` (only once the user's why is in
+   `job.md`).
+4. **`resumate-questions`** drafts `answers.md`: screening answers and short answers for
+   the "Why this company?" and additional-information boxes.
+5. **Supporting materials** (below).
+6. **`resumate-review`** checks everything the employer will read, fixes mechanical
+   problems, and lists what needs the user.
 
-Write `research.md`: cite a source for every fact. The most important section is
-**What they're really looking for**: the 3–5 requirements that matter most, ranked,
-reading between the lines of the posting. Then map each to the user's strongest
-evidence under **Fit**, and be honest about gaps.
+Every piece the employer reads follows `resumate-voice`.
 
-If you can't browse, say so, research from the posting alone, and note that in
-`research.md`.
-
-## 3. Tailor the resume
-
-Edit the application's `resume.yaml` (already a copy of the master). The master is a
-warehouse and is allowed to run long. This copy is what has to fit on the page:
-
-- **Select**: comment out (`#`) bullets, entries, skills, and certificates that don't
-  serve this role. Keep the master's order of sections unless there's a clear reason to
-  change it.
-- **Order**: within each entry, move the most relevant bullets to the top.
-- **Reframe**: reword bullets to foreground what this role cares about, and mirror the
-  posting's terminology where it's *accurate* (ATS keyword matching is literal: if they
-  say "Kubernetes" and the user did Kubernetes work, say "Kubernetes").
-- **Headline and summary**: adjust to speak to this role. Keep dates (graduation month,
-  years) out of the summary: Workday's autofill read a dated summary as a job.
-- **Parser-safe structure**: follow "Parser-safe content" in the `resumate` skill. Plain
-  org names (details go in bullets), a City, ST location on every job, `degree` and
-  `major` for education, phone without +1, and no en or em dashes anywhere, in the
-  resume or the letter. Fix every parse warning `resumate check` prints before handing off.
-- **Never** add an accomplishment, metric, tool, or title that isn't in the master, the
-  stories, or the conversation. If a reframe stretches the original, or you think a
-  real metric exists but you don't know it, leave `# TODO(review): ...`.
-
-Then:
-
-```bash
-resumate check <app>     # fix errors; get to the page limit
-resumate diff <app>      # sanity-check that every change is defensible
-```
-
-## 4. Draft the cover letter
-
-Edit `cover_letter.md`. Write for a recruiter who will skim it in under a minute, likely
-right after the resume. It should read like a confident person wrote it to one
-company, not like a template.
-
-**Shape**: 250–350 words, one page, three to five short paragraphs of at most four
-sentences each. No headings. **One point per paragraph**: never combine two jobs or two
-requirements in one paragraph, or the reader can't follow the argument. Every
-paragraph's first sentence should carry its point, because that's often all that gets
-read.
-
-**Structure (ACT: Align, Connect, Tailor):**
-
-1. **Align: who you are and why this job.** In the first two sentences, say who the
-   user is in one clause (current role, or degree and school) and the specific reason
-   they want *this* role at *this* company. Use their own words from `job.md` (filtered
-   as in *Candor is input, not copy* above), plus at most one fact from `research.md`
-   that a recruiter could verify. Name the role.
-2. **Connect: why you're a great fit.** Pick the two or three requirements ranked
-   highest in `research.md` (*What they're really looking for*) and give each its own
-   paragraph. Open with the employer's need in their terms, then the user's evidence
-   from one job, project, or story: what they did and what happened, with a number if
-   there is one ("Your help desk needs someone who can resolve tickets on their own,
-   and that's what I do now. As a ..."). The argument the reader should come away with:
-   *given what this person has done, they'll do this job well.* One strong story, told
-   briefly, beats a list of every qualification. Don't repeat the resume line by line;
-   add the context a bullet can't.
-3. **Close: interest and confidence.** Say plainly what they'd bring or take on in the
-   role, why they expect to do well (tie it to evidence already given), and invite a
-   conversation. Confident, not pleading: no "I hope", "I would be honored", or "thank
-   you for considering my application".
-
-**Tailor throughout**: mirror the company's language for its work and the posting's
-words for the job. The letter should fail if sent to a different company.
-
-**Gaps**: don't volunteer them. Show the closest real evidence plus intent ("I've built
-REST APIs in Flask and want to do the same in GraphQL") rather than "I haven't used X."
-Never a sentence of caveats, let alone a paragraph. Candid gap analysis goes in
-`research.md` for interview prep.
-
-**Sound human, not generated:**
-
-- Write like the user talks. Reuse phrasing from `job.md` and `stories/`. Contractions
-  are fine.
-- Concrete beats impressive: a system name, a number, what broke and how they fixed it.
-- Vary sentence length. Don't start most sentences with "I".
-- Avoid stock phrases: "I am writing to apply/express my interest", "I am thrilled /
-  excited to apply", "passionate about", "leverage", "results-driven",
-  "detail-oriented", "team player", "fast-paced environment", "proven track record",
-  "I believe I would be a great fit", "unique blend of skills", "make an impact".
-- Avoid generated-text tells: triplets of adjectives, "not only… but also", rhetorical
-  questions, em-dash asides in every paragraph, and a final sentence that just
-  restates the letter.
-- No claims about the company you couldn't cite.
-
-Set `recipient` only if research found a named person confidently; otherwise leave it
-unset and open with "Dear Hiring Team,". Sign off with "Sincerely," and the user's name
-from the resume.
-
-**Before handing off**, run the skim test: read only the first sentence of each
-paragraph. Together they should answer *who is this, why us, why them, what next*.
-Then read the whole thing aloud for anything the user wouldn't say. Check every claim
-traces to the master resume, stories, or the conversation, and that the body is
-250–350 words.
-
-## 5. Supporting materials
+## 3. Supporting materials
 
 Review `supporting/` against this role and write `materials.md`: what to include and
 why, what you considered and rejected, and anything worth creating. Respect
-`shareable:` in sidecar notes (`ask-first` → flag it; `no` → never recommend). Fewer is
+`shareable:` in sidecar notes (`ask-first`: flag it; `no`: never recommend). Fewer is
 better: only recommend what clearly strengthens the application. Don't attach anything;
-the user decides.
+the user decides and runs `resumate attach`.
 
-## 6. Build and hand off
+## 4. Build and hand off
 
 ```bash
 resumate check <app>
@@ -185,18 +109,27 @@ resumate build <app>
 
 Then give the user a short summary:
 
-- Paths to the PDFs (`out/`) and the source files to edit
-- The 3–5 requirements you optimized for, and the main tailoring choices
-- **Every `TODO(review)` item** they need to resolve (from `resumate check`)
+- Paths to the PDFs (`out/`), `answers.md`, and the source files to edit
+- How old the posting is (from `posted:`), and if it's a strong match and fresh, that
+  applying soon is worth it
+- The 3 to 5 requirements you optimized for, and the main tailoring choices
+- **Every `TODO(review)` item** they need to resolve (from `resumate check`), including
+  any screening answer you couldn't confirm
+- Anything from the employer's AI or identity-verification policy they should know
+  before applying or interviewing, and any possible referral `research.md` found (they
+  decide whether to reach out; you never contact anyone)
 - Your supporting-materials recommendation in one line
+- **One ask:** rewrite at least one sentence of the letter in their own words, or swap in
+  a phrase they'd actually say, before submitting
 - How to iterate: edit the files directly, or tell you what to change, then
-  `resumate build <app> --open`
+  `resumate build <app> --open`. After hand edits, `resumate-review` can check again.
 
-Leave `status: drafting`. The user sets `ready`/`applied` themselves
-(`resumate status <app> applied`).
+Leave `status: drafting`. The user submits the application and sets `ready`, `applied`,
+and later statuses themselves (`resumate status <app> applied`).
 
 ## When you learn something new
 
 If the user mentions an accomplishment or story during this process that isn't in the
 master materials, offer to add it there too (see `resumate-capture`), so future
-applications benefit.
+applications benefit. When the status becomes `interviewing`, use
+`resumate-interview-prep`.

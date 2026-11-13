@@ -13,9 +13,13 @@ so you get an interview:
    the **job description**.
 3. The agent researches the company, **tailors a resume** (by commenting out and
    reframing master content, never inventing it), **drafts a cover letter** from your
-   stories, and **recommends supporting materials**.
-4. You review and edit the plain-text files, then compile them with
-   `resumate build`.
+   stories, **drafts answers** for the application form's questions, **recommends
+   supporting materials**, and reviews it all.
+4. You review and edit the plain-text files, compile them with `resumate build`, and
+   submit the application yourself.
+
+Finding openings is up to you (or another tool): resumate starts once you have a
+posting. It favors a few strong applications over many weak ones.
 
 ## Install
 
@@ -65,17 +69,19 @@ resumate status acme applied
 career/
   resumate.yaml              style and page-limit settings
   AGENTS.md                  orientation for agents (CLAUDE.md, GEMINI.md import it)
-  .agents/skills/            resumate, resumate-apply, resumate-capture
+  .agents/skills/            resumate and its task skills (see "Agent skills")
   .claude/skills/            the same skills, for Claude Code
   master/resume.yaml         the master resume
   stories/*.md               work anecdotes for cover letters
   supporting/                portfolio pieces, writing samples, ... (+ optional notes)
   applications/<date>-<company>-<role>/
-    job.md                   why you're interested + job description + status
+    job.md                   why you're interested + screening questions + job description + status
     research.md              agent's research, with sources
     resume.yaml              tailored resume
     cover_letter.md          tailored cover letter
+    answers.md               drafted answers for the application form
     materials.md             supporting-material recommendations
+    interview-prep.md        prep guide, once you have an interview
     out/                     PDFs to submit
 ```
 
@@ -179,11 +185,21 @@ resumate works with any coding agent. It uses two open standards:
   `.claude/skills/` for Claude Code. Agents without skill support are pointed to the
   files by `AGENTS.md`.
 
+Each skill does one job:
+
 | Skill | Use |
 |---|---|
-| `resumate` | File formats and CLI reference |
-| `resumate-apply` | Research a role, tailor resume and cover letter, recommend materials, hand off for review |
-| `resumate-capture` | Interview you to grow the master resume and stories; first-time setup |
+| `resumate` | File formats, CLI, and the parser-safe content rules |
+| `resumate-setup` | First-time import of your existing resume into the master |
+| `resumate-capture` | Interview you to grow the master resume and stories; optional README and LinkedIn checks |
+| `resumate-apply` | Coordinate one application: intake, the five steps below, materials, build, hand off |
+| `resumate-research` | Company and role research, ranked requirements, AI-use policy, possible referrals |
+| `resumate-tailor` | Tailor the application's resume from the master |
+| `resumate-cover-letter` | Write the cover letter, without repeating your other letters |
+| `resumate-questions` | Draft screening (knockout) and "Why this company?" answers in `answers.md` |
+| `resumate-review` | Final check before you submit; also after you edit by hand |
+| `resumate-voice` | Shared writing rules: your voice, banned phrases and AI tells, no dashes |
+| `resumate-interview-prep` | Turn an application into an interview prep guide |
 
 After upgrading resumate, refresh both copies with `resumate install-skills`.
 
